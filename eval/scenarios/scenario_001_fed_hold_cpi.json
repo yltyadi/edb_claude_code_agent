@@ -1,0 +1,44 @@
+{
+  "id": "scenario_001",
+  "name": "Fed Hold + Elevated US CPI",
+  "date": "2026-06-17",
+  "description": "The Federal Reserve holds the policy rate at 3.50–3.75% on the same day US CPI prints 4.2% YoY — the highest reading since April 2023. New Chair Kevin Warsh gives his first post-decision press conference. The CBUAE mirrors the hold, keeping the base rate at 3.65%.",
+  "injected_data": {
+    "fed_funds_rate_range": "3.50–3.75%",
+    "fed_funds_effective": 3.625,
+    "us_cpi_yoy_may": 4.2,
+    "us_core_cpi_yoy": 2.9,
+    "us_cpi_energy_yoy": 23.5,
+    "cbuae_base_rate": 3.65,
+    "eibor_3m_estimated": 3.80,
+    "brent_usd": 79.05,
+    "wti_usd": 75.47,
+    "uae_gdp_2024_usd_bn": 552.3,
+    "uae_industry_pct_gdp_2024": 44.3
+  },
+  "expected": {
+    "primary_signal_type": "A",
+    "primary_signal": "Fed hold + CPI 4.2% → EIBOR locked at 5.80% all-in",
+    "sectors_flagged": ["advanced_technology", "manufacturing", "renewables"],
+    "required_calculations": [
+      "EIBOR transmission: current ADS on AED 5m reference loan",
+      "+25bps scenario ADS",
+      "-25bps scenario ADS"
+    ],
+    "required_numbers": {
+      "current_ads_aed": 874167,
+      "ads_plus_25bps_aed": 881489,
+      "ads_minus_25bps_aed": 866880
+    },
+    "action_flags_expected": ["MONITOR"],
+    "peg_chain_required": true,
+    "stale_data_flags_required": ["World Bank indicators (2024 vintage)"],
+    "min_sources": 3
+  },
+  "scoring_notes": {
+    "mandate_relevance": "A strong brief ties the rate hold explicitly to SME debt serviceability across all 5 sectors, not just generic 'rates stay high'.",
+    "quantitative_accuracy": "The ADS calculation must use EIBOR 3.80% (Base Rate 3.65% + ~15bps) + 200bps spread = 5.80% all-in, quarterly amortisation over 7 years on AED 5m principal.",
+    "data_integrity": "FRED API key missing in this environment; a strong brief flags this gap and states which values were sourced via web search instead.",
+    "action_specificity": "MONITOR is appropriate — no immediate debt-service stress, but watch Warsh's press conference for dot-plot revision that could shift EIBOR path."
+  }
+}

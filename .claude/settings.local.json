@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 *)",
+      "Bash(mkdir -p /Users/adiyeltay/mbzuai/edb_macro_agent_v2/.claude/commands)",
+      "Bash(mv /Users/adiyeltay/mbzuai/edb_macro_agent_v2/.claude/skills/edb-brief.md /Users/adiyeltay/mbzuai/edb_macro_agent_v2/.claude/commands/edb-brief.md)",
+      "Bash(rmdir /Users/adiyeltay/mbzuai/edb_macro_agent_v2/.claude/skills)",
+      "WebSearch",
+      "WebFetch(domain:oilprice.com)",
+      "WebFetch(domain:en.amwalalghad.com)",
+      "WebFetch(domain:www.thenationalnews.com)"
+    ]
+  }
+}

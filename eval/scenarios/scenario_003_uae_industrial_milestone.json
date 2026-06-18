@@ -1,0 +1,40 @@
+{
+  "id": "scenario_003",
+  "name": "UAE Industrial Milestone — AED 200bn Achieved",
+  "date": "2026-05-04",
+  "description": "Dr Sultan Al Jaber announces that the UAE industrial sector's contribution has reached AED 200bn — a 70% increase — at the launch of the 'Make it in the Emirates 2026' platform. This marks two-thirds of the Operation 300bn target. The platform opens AED 180bn in government procurement opportunities and a new AED 1bn National Industrial Resilience Fund.",
+  "injected_data": {
+    "industrial_contribution_aed_bn": 200,
+    "industrial_growth_pct": 70,
+    "operation_300bn_target_aed_bn": 300,
+    "operation_300bn_deadline_year": 2031,
+    "procurement_pipeline_aed_bn": 180,
+    "resilience_fund_aed_bn": 1,
+    "industrial_exports_aed_bn": 262,
+    "advanced_exports_aed_bn": 92
+  },
+  "expected": {
+    "primary_signal_type": "A",
+    "primary_signal": "UAE industrial sector reaches AED 200bn — 66.7% of Operation 300bn target, 5 years to deadline",
+    "sectors_flagged": ["manufacturing", "advanced_technology", "healthcare", "food_security"],
+    "required_calculations": [
+      "Operation 300bn progress % (200/300 = 66.7%)",
+      "Remaining target AED 100bn over 5 years = AED 20bn/year run-rate needed",
+      "Implied annual run-rate vs historical growth trajectory"
+    ],
+    "required_numbers": {
+      "progress_pct": 66.7,
+      "remaining_aed_bn": 100,
+      "annual_run_rate_needed_aed_bn": 20
+    },
+    "action_flags_expected": ["REVIEW"],
+    "min_sources": 3,
+    "edb_mandate_connection": "EDB credit deployment must help sustain AED 20bn/yr additional industrial value-add; AED 180bn procurement pipeline is an active opportunity for EDB-backed SMEs"
+  },
+  "scoring_notes": {
+    "mandate_relevance": "This is the most directly on-mandate signal possible — it reports progress on Operation 300bn itself. A top brief quantifies the run-rate gap and connects it explicitly to EDB's lending pipeline.",
+    "quantitative_accuracy": "Calculations are simple but must be present: 200/300 = 66.7%; 300-200 = 100bn remaining; 100/5 = 20bn/yr needed. The brief should also note that the AED 20bn/yr run-rate exceeds recent growth rates, implying EDB must play an active financing role.",
+    "action_specificity": "REVIEW is appropriate — EDB should review its pipeline to ensure AED 20bn/yr of new industrial value-add is being supported. The AED 1bn Resilience Fund is a co-financing opportunity to flag.",
+    "data_integrity": "World Bank industry data (44.3% of GDP in 2024) is corroborating but 1–2 years stale; the brief should note this and prefer the Al Jaber/government announcement as the more current source."
+  }
+}

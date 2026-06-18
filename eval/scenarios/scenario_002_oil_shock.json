@@ -1,0 +1,45 @@
+{
+  "id": "scenario_002",
+  "name": "Sudden Oil Price Crash — US-Iran Deal",
+  "date": "2026-06-17",
+  "description": "A US-Iran memorandum of understanding allows immediate resumption of Iranian oil exports and free tanker passage through the Strait of Hormuz. Brent crude falls 24% from the May 2026 average of $103.71 to $79.05, and WTI drops to $75.47. This is the dominant market-moving event of the day.",
+  "injected_data": {
+    "brent_current_usd": 79.05,
+    "brent_may_avg_usd": 103.71,
+    "brent_pct_change": -24.2,
+    "wti_current_usd": 75.47,
+    "uae_oil_production_mbd": 3.2,
+    "uae_fiscal_breakeven_usd": 55,
+    "petrochemical_input_passthrough_pct": 60,
+    "renewables_cost_parity_usd": 45
+  },
+  "expected": {
+    "primary_signal_type": "A",
+    "primary_signal": "Brent -24% due to US-Iran deal → AED 106bn/yr UAE oil revenue impact",
+    "sectors_flagged": ["manufacturing", "renewables", "food_security"],
+    "required_calculations": [
+      "Annualised UAE oil revenue impact in AED (production × price change × 365 × peg rate)",
+      "Petrochemical input cost change (pct change × pass-through)",
+      "Fiscal buffer above breakeven"
+    ],
+    "required_numbers": {
+      "annual_revenue_impact_aed_bn": -105.8,
+      "petrochemical_input_cost_change_pct": -14.5,
+      "fiscal_buffer_usd": 23.57
+    },
+    "conflicting_signals": {
+      "present": true,
+      "description": "Oil crash is negative for UAE fiscal revenues but positive for manufacturing input costs — both must be modelled",
+      "base_case": "structural_decline",
+      "base_case_rationale": "US-Iran MOU backed by tanker-crossing guarantees; consensus pricing in Iranian supply return"
+    },
+    "action_flags_expected": ["ESCALATE"],
+    "min_sources": 4
+  },
+  "scoring_notes": {
+    "mandate_relevance": "The brief must explicitly connect oil decline to: (1) fiscal headroom for Operation 300bn, (2) manufacturing input costs, (3) renewables project economics vs oil parity, (4) food supply chain logistics costs.",
+    "quantitative_accuracy": "Revenue impact = 3.2m bbl/day × $24.66/bbl × 365 × AED 3.6725/USD. Result must be ≈ AED 105–106bn/yr. Both the fiscal negative and the input-cost positive must be computed.",
+    "action_specificity": "ESCALATE is correct for the fiscal headwind; MONITOR may be appropriate for the input-cost benefit. The action rationale must mention EDB's own funding base risk if oil stays below $80.",
+    "conflicting_signals": "A top-scoring brief explicitly models both scenarios (structural decline vs reversal on deal collapse) and states which is base case with rationale."
+  }
+}
