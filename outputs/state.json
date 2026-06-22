@@ -1,49 +1,113 @@
 {
   "schema_version": 1,
   "agent_version": "v2",
-  "last_updated": "2026-06-18",
+  "last_updated": "2026-06-22",
   "last_run": {
-    "date": "2026-06-18",
-    "brief_path": "outputs/brief_v2_2026-06-18_0630.md",
+    "date": "2026-06-22",
+    "brief_path": "outputs/brief_v2_2026-06-22_0800.md",
     "agent_version": "v2"
   },
   "baselines": {
-    "eibor_3m_pct": 3.80,
-    "brent_usd": 79.45,
-    "wti_usd": 74.50,
+    "eibor_3m_pct": 3.8155,
+    "brent_usd": 79.51,
+    "wti_usd": 76.51,
     "fed_funds_upper_pct": 3.75,
     "fed_funds_lower_pct": 3.50,
     "cbuae_base_rate_pct": 3.65,
     "us_cpi_yoy_pct": 4.2,
     "us_pce_yoy_pct": 3.6,
-    "us_10yr_treasury_pct": 4.49,
-    "uae_gdp_growth_forecast_pct": 3.1,
+    "us_10yr_treasury_pct": 4.46,
+    "uae_gdp_growth_forecast_pct": 5.0,
     "opec_basket_usd": null,
     "notes": {
-      "eibor": "estimated (CBUAE base 3.65% + 15bps); market rate 3.76% on June 10 per TradingEconomics",
-      "brent": "June 17, 2026 close; Iran deal signed June 19 introduces structural downside to ~$71",
-      "wti": "not refreshed today (FRED API unavailable); prior value retained",
-      "us_cpi": "not refreshed today (FRED API unavailable); prior value retained; PCE 3.6% from FOMC statement",
-      "fed": "June 17 FOMC: 5th consecutive hold; hawkish pivot — dot plot median 3.8%, 9/18 officials project hike; Warsh did not submit dot",
-      "iran_deal": "US-Iran MOU electronically signed; formal ceremony Geneva June 19; Iranian tankers moving; full volume ramp months away"
+      "eibor": "live market rate 3.8155% from TradingEconomics/CBUAE, June 19, 2026; CBUAE base rate 3.65% confirmed June 17",
+      "brent": "June 22, 2026 intraday — $79.51 (reversed from $77.54 earlier today); FRED stale at $84.36 (June 15, pre-Hormuz); market pricing Hormuz transit-fee implementation risk",
+      "wti": "estimated June 22, 2026; ~$76.51 (Brent − $3 discount)",
+      "fred_status": "LIVE — API key configured June 22, 2026. INDPRO May 102.65 (+0.14% MoM); T10YIE 2.25% (June 18); DGS10 4.49% (June 17); real 10yr yield 2.24%",
+      "opec_plus": "4th consecutive monthly increase: +188k bpd July (June 7 meeting); cumulative 752k bpd since May; UAE not party (exited May 1)",
+      "edb_adex": "AED 1bn export finance partnership with ADEX; AED 367m first tranche deployed to 8 UAE entities (May 6-7, 2026)",
+      "us_cpi": "May 2026 BLS release June 10: 4.2% YoY (energy shock from Iran conflict); core 2.9%; energy +23.5%",
+      "fed": "June 17 FOMC (Warsh inaugural): 5th consecutive hold; HAWKISH PIVOT — median dot now points to hike (vs cut in March); 9/18 project hike before year-end; 17/18 see upside inflation risks",
+      "iran_deal": "US-Iran deal signed June 14-19 (Versailles); 60-day Hormuz framework active; Iran to charge transit fees; nuclear program unresolved",
+      "operation_300bn": "AED 200bn milestone confirmed May 4, 2026 (Dr Sultan Al Jaber statement); 40.1% of gap from AED 133bn closed; AED 20bn/yr pace needed",
+      "taziz_alpha_dhabi": "$10bn chemicals deal at Al Ruwais signed May 7, 2026; 14 chemicals, 2.2Mt/yr capacity; pending FID and regulatory approvals",
+      "uae_gdp_imf": "IMF 2026 forecast 5.0% GDP growth; highest among GCC; World Bank 2024 actual GDP $552.3bn"
     }
   },
   "streaks": {
     "brent_direction": "up",
     "brent_direction_sessions": 1,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 188,
-    "cbuae_rate_unchanged_days": 188
+    "eibor_unchanged_days": 192,
+    "cbuae_rate_unchanged_days": 192
   },
   "signals_fired_last_run": [
-    "fed_hawkish_pivot_warsh_dot_plot_hike_signal",
-    "us_iran_deal_hormuz_reopening_june19_signing",
-    "brent_5session_streak_broken_recovery_79.45",
-    "cbuae_hold_3.65pct_day188_unchanged",
-    "pce_revised_3.6pct_fomc_june17_statement",
-    "operation_300bn_on_track_aed200bn_milestone"
+    "opec_plus_july_4th_consecutive_188k_bpd_increase_june7",
+    "brent_intraday_reversal_77.54_to_79.51_hormuz_transit_fee_uncertainty",
+    "edb_adex_aed1bn_export_finance_aed367m_first_tranche_deployed",
+    "fred_api_live_indpro_may_102.65_real10yr_2.24pct_breakeven_2.25pct",
+    "fed_hawkish_hold_continuing_day5",
+    "cbuae_3.65pct_continuing_day192",
+    "iran_deal_hormuz_60day_framework_continuing",
+    "us_cpi_may_4.2pct_continuing"
   ],
   "eval_history": [
+    {
+      "eval_date": "2026-06-22",
+      "v2_brief_path": "outputs/brief_v2_2026-06-22_0800.md",
+      "v1_brief_path": "outputs/brief_v1_2026-06-17_0700.md",
+      "general_brief_path": "outputs/brief_general_2026-06-17.md",
+      "scores": {
+        "v2": {
+          "auto_passed": 18,
+          "auto_total": 20,
+          "final_score": 88.3,
+          "dimension_scores": {
+            "mandate_relevance": 4,
+            "data_grounding": 5,
+            "quantitative_accuracy": 3,
+            "structure_completeness": 5,
+            "action_specificity": 4,
+            "data_integrity": 5,
+            "trend_continuity": 5
+          }
+        },
+        "v1": {
+          "auto_passed": 18,
+          "auto_total": 20,
+          "final_score": 85.4,
+          "dimension_scores": {
+            "mandate_relevance": 4,
+            "data_grounding": 4,
+            "quantitative_accuracy": 4,
+            "structure_completeness": 5,
+            "action_specificity": 5,
+            "data_integrity": 5,
+            "trend_continuity": 2
+          }
+        },
+        "general": {
+          "auto_passed": 5,
+          "auto_total": 20,
+          "final_score": 30.6,
+          "dimension_scores": {
+            "mandate_relevance": 2,
+            "data_grounding": 2,
+            "quantitative_accuracy": 1,
+            "structure_completeness": 1,
+            "action_specificity": 2,
+            "data_integrity": 2,
+            "trend_continuity": 2
+          }
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": 2.9,
+        "v2_vs_gen": 57.7,
+        "v1_vs_gen": 54.8
+      },
+      "dimensions_patched_v2": ["quantitative_accuracy"]
+    },
     {
       "eval_date": "2026-06-17",
       "v2_brief_path": "outputs/brief_v2_2026-06-17_0912.md",
@@ -101,5 +165,12 @@
       "dimensions_patched_v2": []
     }
   ],
-  "claude_md_patches_applied": []
+  "claude_md_patches_applied": [
+    {
+      "date": "2026-06-22",
+      "dimension": "quantitative_accuracy",
+      "score": 3,
+      "patch": "Always run all four required calculations (EIBOR sensitivity, oil fiscal USD+AED, petrochemical pass-through, Op300bn run-rate) in every brief including same-day refreshes. Corrected Op300bn method: (200-133)/(300-133)=40.1% of gap, not 200/300=66.7%."
+    }
+  ]
 }

@@ -25,6 +25,36 @@ If state.json baselines are null (first run), note this and proceed without tren
 
 ---
 
+## Step 0.5 — Delta scan: what's new since the last brief?
+
+Using `last_run.date` from state.json, compute `days_since_last_run`. If ≥ 1, run these
+searches **before** the full data pull so you can distinguish new signals from continuing ones.
+
+Construct the date filter as `after:{last_run.date}` in each query (ISO format YYYY-MM-DD):
+
+```
+WebSearch: "Federal Reserve FOMC OR Fed rate after:{last_run.date}"
+WebSearch: "CBUAE UAE central bank rate after:{last_run.date}"
+WebSearch: "Brent crude oil price after:{last_run.date}"
+WebSearch: "UAE industrial manufacturing sector after:{last_run.date}"
+WebSearch: "US CPI inflation OR PCE after:{last_run.date}"
+WebSearch: "OPEC production output after:{last_run.date}"
+WebSearch: "UAE economy EDB after:{last_run.date}"
+```
+
+For each result, classify it:
+- **NEW** — event occurred after `last_run.date`; not in `signals_fired_last_run`
+- **CONTINUING** — same event as prior run, with updated data or status
+
+Record the classification next to each signal. Use it in Steps 2–4:
+- Only a **NEW** signal may anchor the Type A headline.
+- A **CONTINUING** signal may appear in the matrix with its age noted (e.g. "Fed hold — 5 days since event") but must not be re-presented as today's breaking news.
+- If no NEW signal meets Type A threshold, lead with the most material CONTINUING signal
+  and explicitly state: *"No new macro event since [last_run.date]; this brief refreshes
+  quantitative data and status on prior signals."*
+
+---
+
 ## Step 1 — Gather live data (run all, in parallel)
 
 **FRED economic series** (requires FRED_API_KEY in .env):
@@ -198,6 +228,12 @@ the indirect implication (e.g. "rate hold keeps financing costs stable for new c
 - Conflicting signals → model both scenarios, state base case with one-line rationale
 - Tool failure → name every failed series; never hallucinate to fill
 - All five sectors in matrix → every row data-justified
+- **Signal age** → every signal in the brief must carry one of: `[NEW]` / `[CONTINUING — N days]`.
+  The Type A headline must be the highest-scoring NEW signal. If all signals are CONTINUING,
+  the brief header must state this explicitly rather than re-presenting old events as fresh news.
+- **No stale headlines** → do not lead with an event that occurred before `last_run.date`
+  unless it is the only material signal and its status has materially changed (e.g. confirmed,
+  reversed, escalated). In that case label it `[CONTINUING — escalated]`.
 
 ---
 

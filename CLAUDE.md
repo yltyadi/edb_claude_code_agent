@@ -111,3 +111,8 @@ Type `/edb-brief` to run the full pipeline.
 
 *This section is appended automatically by `/eval-brief` when any dimension scores ≤ 3.
 Do not delete entries — they accumulate as a learning history.*
+
+### 2026-06-22 — Quantitative Accuracy (scored 3/5)
+- **Always run all four required calculations in every brief, including same-day refreshes.** The 0800 brief omitted the petrochemical feedstock pass-through and the Operation 300bn annual run-rate because it was framed as a "same-day refresh focused on new signals." Being a refresh does not waive the calculation requirement — include all four in Step 3 regardless of run frequency.
+- **Petrochemical pass-through template:** Use Brent delta × 60% pass-through rate, applied to UAE petrochemical sector cost base (~AED 17.5bn feedstock). Report as a percentage and an AED figure. Even when the delta is small, the calculation must appear.
+- **Operation 300bn run-rate template:** Always compute current AED figure vs AED 300bn target by 2031, reporting (a) % of gap closed from AED 133bn baseline (not % of total target — 200/300=66.7% is the wrong method; correct is (200−133)/(300−133)=40.1%), (b) AED remaining, (c) AED/yr pace required. This calculation takes one line and must appear in every brief.

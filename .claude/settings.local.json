@@ -8,7 +8,8 @@
       "WebSearch",
       "WebFetch(domain:oilprice.com)",
       "WebFetch(domain:en.amwalalghad.com)",
-      "WebFetch(domain:www.thenationalnews.com)"
+      "WebFetch(domain:www.thenationalnews.com)",
+      "Bash(wait)"
     ]
   }
 }
