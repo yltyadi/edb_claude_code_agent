@@ -9,7 +9,16 @@
       "WebFetch(domain:oilprice.com)",
       "WebFetch(domain:en.amwalalghad.com)",
       "WebFetch(domain:www.thenationalnews.com)",
-      "Bash(wait)"
+      "Bash(wait)",
+      "WebFetch(domain:www.federalreserve.gov)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:www.bls.gov)",
+      "WebFetch(domain:www.cnbc.com)",
+      "WebFetch(domain:gulfnews.com)",
+      "WebFetch(domain:fortune.com)",
+      "WebFetch(domain:www.tradingkey.com)",
+      "WebFetch(domain:www.aljazeera.com)",
+      "WebFetch(domain:www.axios.com)"
     ]
   }
 }
