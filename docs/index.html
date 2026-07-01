@@ -664,6 +664,18 @@
     }
   }
 
+  // ── Strip YAML frontmatter (--- ... ---) if present ────────────────
+  function stripFrontmatter(md) {
+    if (!md.startsWith('---')) return md;
+    const after = md.slice(3);
+    // Must be a newline right after the opening ---
+    if (after[0] !== '\n' && after[0] !== '\r') return md;
+    const closeIdx = after.indexOf('\n---');
+    if (closeIdx === -1) return md;
+    // Return everything after the closing ---\n
+    return after.slice(closeIdx + 4).replace(/^\n/, '');
+  }
+
   // ── Fetch and render brief ──────────────────────────────────────────
   async function loadBrief(downloadUrl, fileName) {
     const container = document.getElementById('brief-content');
@@ -672,7 +684,8 @@
 
     const resp = await fetch(downloadUrl);
     if (!resp.ok) throw new Error(`Could not fetch brief: ${resp.status}`);
-    const md = await resp.text();
+    const raw = await resp.text();
+    const md = stripFrontmatter(raw);
 
     // Configure marked (safe defaults)
     marked.setOptions({ breaks: false, gfm: true });

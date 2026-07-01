@@ -155,14 +155,33 @@ def build_prompt(state: dict, tool_data: dict, search_data: dict) -> str:
     parts.append("""
 ## YOUR TASK
 
-Write the complete EDB Daily Macro Intelligence Brief now. Include:
-1. All four required calculations (EIBOR ADS ±25/50bps, oil fiscal with ×3.6725 FX step, petrochemical 60% pass-through, Op300bn gap method)
-2. Type A (Executive Brief + sector matrix + key number + 72h watchlist)
-3. Type B (Credit Alert + at least one calculation block + scenario table + action flag)
-4. Type C (Stakeholder Bulletin — all three sub-questions)
-5. Sources and Methodology sections
+Write the complete EDB Daily Macro Intelligence Brief now.
 
-Output ONLY the brief markdown. Begin with the YAML frontmatter separator (---).
+**FORMAT — copy this header block exactly:**
+```
+---
+# EDB Daily Macro Intelligence Brief
+**Date:** {full weekday, DD Month YYYY}
+**Agent version:** v{N}
+**Generated:** {HH:MM UTC}
+**Signals processed:** {N}
+**Signals passing mandate filter:** {N}
+
+---
+```
+Then continue with:
+1. `## Executive Brief (Type A)` — **Headline:** (one sentence with [NEW]/[CONTINUING] labels), 2–3 para body with trend language from state.json streaks, sector impact matrix (all 5 rows, every row data-justified), **Key number:** (one AED figure), **Watch list — next 72 hours:** (3 named events)
+2. `## Credit Team Alert (Type B)` — signal, portfolio exposure, calculation block with ALL FOUR required calcs:
+   - **EIBOR ADS ±25/50bps:** First line of block must be `EIBOR source: estimated (...)`. Scenario lines must use format `+25bps scenario: AED X (Δ AED Y)` — no space between `+25` and `bps`.
+   - **Oil fiscal calc:** First output line must be `UAE oil revenue impact: AED X` — then show ×3.6725 FX step and annual figure.
+   - **Petrochemical pass-through:** 60% rate × AED 17.5bn feedstock × Brent delta → AED result.
+   - **Op300bn run-rate:** (current−133)/(300−133) gap method — not current/300.
+   Scenario table: compact 2-row (Base case | Reversal) within 150 chars. Action flag with team/threshold/milestone.
+3. `## Stakeholder Bulletin (Type C)` — What happened / What it means / What businesses should consider
+4. `*Sources:*` and `*Methodology:*` sections — EIBOR estimation basis must appear in the calc block AND here
+
+Do NOT add YAML frontmatter. Start the output with `---` (a plain horizontal rule), then the `#` heading.
+Output ONLY the brief markdown — no preamble, no explanation.
 """)
 
     return "\n".join(parts)
@@ -188,7 +207,7 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        max_tokens=8192,
+        max_tokens=16384,
         temperature=0.1,
     )
     return response.choices[0].message.content

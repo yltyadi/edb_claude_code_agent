@@ -4,8 +4,8 @@
   "last_updated": "2026-07-01",
   "last_run": {
     "date": "2026-07-01",
-    "timestamp": "2026-07-01T10:40:03.116372",
-    "brief_path": "outputs/brief_v2_2026-07-01_1040.md",
+    "timestamp": "2026-07-01T15:02:26.941137",
+    "brief_path": "outputs/brief_v2_2026-07-01_1502.md",
     "agent_version": "v2"
   },
   "baselines": {
@@ -43,7 +43,7 @@
     "brent_direction": "up",
     "brent_direction_sessions": 2,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 201,
+    "eibor_unchanged_days": 202,
     "cbuae_rate_unchanged_days": 200
   },
   "signals_fired_last_run": [
@@ -59,6 +59,126 @@
     "cbuae_3.65pct_eibor_3.8155pct_continuing_day200"
   ],
   "eval_history": [
+    {
+      "eval_date": "2026-07-01",
+      "eval_suffix": "_v2",
+      "v2_brief_path": "outputs/brief_v2_2026-07-01_1502.md",
+      "v1_brief_path": "outputs/brief_v1_2026-06-17_0700.md",
+      "general_brief_path": "outputs/brief_general_2026-06-17.md",
+      "scores": {
+        "v2": {
+          "auto_passed": 18,
+          "auto_total": 20,
+          "final_score": 96.0,
+          "dimension_scores": {
+            "mandate_relevance": 5,
+            "data_grounding": 5,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 5,
+            "action_specificity": 5,
+            "data_integrity": 5,
+            "trend_continuity": 5
+          }
+        },
+        "v1": {
+          "auto_passed": 18,
+          "auto_total": 20,
+          "final_score": 82.6,
+          "dimension_scores": {
+            "mandate_relevance": 4,
+            "data_grounding": 4,
+            "quantitative_accuracy": 4,
+            "structure_completeness": 4,
+            "action_specificity": 4,
+            "data_integrity": 5,
+            "trend_continuity": 2
+          }
+        },
+        "general": {
+          "auto_passed": 5,
+          "auto_total": 20,
+          "final_score": 35.9,
+          "dimension_scores": {
+            "mandate_relevance": 2,
+            "data_grounding": 3,
+            "quantitative_accuracy": 2,
+            "structure_completeness": 1,
+            "action_specificity": 2,
+            "data_integrity": 3,
+            "trend_continuity": 2
+          }
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": 13.4,
+        "v2_vs_gen": 60.1,
+        "v1_vs_gen": 46.6
+      },
+      "dimensions_patched_v2": [],
+      "auto_check_notes": "v2 recovers to 96.0 after 1040 regression (70.6). All 7 LLM dimensions score 5/5 — LLM component achieves 60.0/60, matching Claude Code baseline. Two remaining auto check failures are regex artifacts: (1) has_eibor_sensitivity — brief uses '+25 bps' (with space) vs required '+25bps' (no space); content is substantively correct; (2) has_oil_revenue_calc — brief uses 'Oil fiscal buffer' heading vs required 'oil revenues by an estimated AED' phrasing; the June 25 fix ('UAE oil revenue impact: AED X' as first calc line) was not applied in this run. Both fixes are one-line changes to the brief calc block output. No CLAUDE.md patches required this cycle — all dimensions ≥4. Format fixes noted for next run."
+    },
+    {
+      "eval_date": "2026-07-01",
+      "eval_suffix": "_v1",
+      "v2_brief_path": "outputs/brief_v2_2026-07-01_1040.md",
+      "v1_brief_path": "outputs/brief_v1_2026-06-17_0700.md",
+      "general_brief_path": "outputs/brief_general_2026-06-17.md",
+      "scores": {
+        "v2": {
+          "auto_passed": 12,
+          "auto_total": 20,
+          "final_score": 70.6,
+          "dimension_scores": {
+            "mandate_relevance": 4,
+            "data_grounding": 3,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 3,
+            "action_specificity": 5,
+            "data_integrity": 3,
+            "trend_continuity": 4
+          }
+        },
+        "v1": {
+          "auto_passed": 18,
+          "auto_total": 20,
+          "final_score": 82.6,
+          "dimension_scores": {
+            "mandate_relevance": 4,
+            "data_grounding": 4,
+            "quantitative_accuracy": 4,
+            "structure_completeness": 4,
+            "action_specificity": 4,
+            "data_integrity": 5,
+            "trend_continuity": 2
+          }
+        },
+        "general": {
+          "auto_passed": 5,
+          "auto_total": 20,
+          "final_score": 35.9,
+          "dimension_scores": {
+            "mandate_relevance": 2,
+            "data_grounding": 3,
+            "quantitative_accuracy": 2,
+            "structure_completeness": 1,
+            "action_specificity": 2,
+            "data_integrity": 3,
+            "trend_continuity": 2
+          }
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": -12.0,
+        "v2_vs_gen": 34.7,
+        "v1_vs_gen": 46.7
+      },
+      "dimensions_patched_v2": [
+        "data_grounding",
+        "structure_completeness",
+        "data_integrity"
+      ],
+      "auto_check_notes": "First regression in the eval series: v2 scored below v1 (-12.0 pts). Root causes are entirely in run_agent.py bugs introduced by standalone migration \u2014 NOT v2 architecture: (1) YAML frontmatter generated instead of plain HR separator, causing **Date:**, **Signals processed:**, **Agent version:** header regex checks to fail (4 checks); (2) max_tokens=8192 truncation cut the brief before Sources and Methodology sections (2 checks); (3) format drift used ### headings for Key Number and Watch List instead of **bold inline labels** (2 checks). LLM content quality remained strong: all 4 required calculations correct, Op300bn 40.1% gap method used, streak language present. v2 LLM dimension score identical to v1 (46.6/60). Fix applied: max_tokens raised to 16384; prompt format template updated; CLAUDE.md patched for Data Grounding, Structure Completeness, Data Integrity."
+    },
     {
       "eval_date": "2026-06-30",
       "v2_brief_path": "outputs/brief_v2_2026-06-30_0915.md",
@@ -459,6 +579,24 @@
     }
   ],
   "claude_md_patches_applied": [
+    {
+      "date": "2026-07-01",
+      "dimension": "data_grounding",
+      "score": 3,
+      "patch": "EIBOR estimation basis must appear as first line of calculation code block (not only in narrative). Sources section is mandatory with vintage dates for all FRED series. Keep brief body under 3,500 words so Sources/Methodology always fit."
+    },
+    {
+      "date": "2026-07-01",
+      "dimension": "structure_completeness",
+      "score": 3,
+      "patch": "Use **Key number:** (bold, lowercase) and **Watch list \u2014 next 72 hours:** (bold) \u2014 not ### headings. Sources and Methodology are mandatory final sections; compress Type C before omitting them. Do not generate YAML frontmatter \u2014 header must use bold markdown key-value pairs after plain --- HR."
+    },
+    {
+      "date": "2026-07-01",
+      "dimension": "data_integrity",
+      "score": 3,
+      "patch": "EIBOR estimation chain must be first line of calculation block: 'EIBOR source: estimated (state.json baseline X.XX%; CBUAE base rate X.XX% confirmed [date]; N consecutive days)'. Stale FRED series must be disclosed by name with vintage dates in body AND Methodology. Methodology section is mandatory in every brief."
+    },
     {
       "date": "2026-06-22",
       "dimension": "quantitative_accuracy",
