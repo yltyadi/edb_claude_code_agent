@@ -1,0 +1,128 @@
+name: Generate EDB Macro Brief
+
+# Triggers:
+#   1. workflow_dispatch — any collaborator can click "Run workflow" in the Actions UI
+#   2. issues (opened/reopened) — any collaborator can open a GitHub issue titled
+#      "Generate Brief" to trigger a run from the web UI or the Pages button.
+#      author_association check ensures only OWNER / MEMBER / COLLABORATOR can trigger.
+
+on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: 'Optional notes (shown in commit message)'
+        required: false
+        default: ''
+
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  generate-brief:
+    # For issues: trigger only if title contains "Generate Brief" AND author is a collaborator/owner.
+    # For workflow_dispatch: always run.
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issues' &&
+        contains(github.event.issue.title, 'Generate Brief') &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+      )
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run EDB agent
+        id: run_agent
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'anthropic/claude-sonnet-4-5' }}
+        run: |
+          python run_agent.py 2>&1 | tee agent_output.txt
+          # Extract the SUMMARY_JSON line for downstream steps
+          SUMMARY=$(grep "^SUMMARY_JSON=" agent_output.txt | tail -1 | sed 's/^SUMMARY_JSON=//')
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+          echo "brief_name=$(echo $SUMMARY | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d["brief_name"])')" >> $GITHUB_OUTPUT
+
+      - name: Commit outputs to repository
+        run: |
+          git config user.name  "EDB Macro Agent"
+          git config user.email "agent@edb-macro.ai"
+          git add outputs/
+          # Only commit if there are actual changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            NOTE="${{ github.event.inputs.notes }}"
+            MSG="brief: $(date -u +%Y-%m-%d)"
+            [ -n "$NOTE" ] && MSG="$MSG — $NOTE"
+            git commit -m "$MSG [automated]"
+            git push
+          fi
+
+      - name: Comment on issue and close it
+        if: github.event_name == 'issues' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const briefName = '${{ steps.run_agent.outputs.brief_name }}';
+            const pagesUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/`;
+            const repoUrl  = `https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/outputs/${briefName}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                `✅ **Brief generated: \`${briefName}\`**`,
+                '',
+                `📄 [View on GitHub Pages](${pagesUrl})`,
+                `📁 [Raw file in repo](${repoUrl})`,
+                '',
+                '_This issue was automatically closed by the EDB Macro Agent._'
+              ].join('\n')
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });
+
+      - name: Comment on issue on failure
+        if: github.event_name == 'issues' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Brief generation failed.** [View logs](${runUrl})`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });
