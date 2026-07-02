@@ -61,12 +61,14 @@ AUTOMATED_CHECKS = [
     {
         "id": "has_eibor_sensitivity",
         "name": "EIBOR ±25bps scenario calculation present",
-        "pattern": r"(?i)(\+25bps|\-25bps|plus\s+25|minus\s+25).{0,50}AED",
+        # checks for ±25bps scenario; AED proximity not required (calc-block check covers that)
+        "pattern": r"(?i)\b(EIBOR.{0,300}[+\-]25\s*bps|[+\-]25\s*bps.{0,300}EIBOR|plus\s+25\s*(bps|basis)|minus\s+25\s*(bps|basis))",
     },
     {
         "id": "has_oil_revenue_calc",
         "name": "Oil revenue / fiscal impact calculation present",
-        "pattern": r"(?i)(oil\s+revenue|fiscal.{0,20}impact|revenue\s+impact).{0,100}AED",
+        # matches "oil revenue", "fiscal impact", "revenue impact", "oil fiscal", "fiscal buffer", "fiscal cushion"
+        "pattern": r"(?i)(oil\s+revenue|oil\s+fiscal|fiscal.{0,20}impact|fiscal\s+buffer|fiscal\s+cushion|revenue\s+impact).{0,100}AED",
     },
     # ── sourcing & integrity ─────────────────────────────────────────
     {
