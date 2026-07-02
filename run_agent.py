@@ -26,7 +26,7 @@ CLAUDE_MD_PATH = ROOT / "CLAUDE.md"
 OUTPUTS_DIR = ROOT / "outputs"
 
 OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
-MODEL = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-5")
+MODEL = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-5")
 
 # All tool commands to run in sequence
 TOOL_COMMANDS = [
@@ -152,35 +152,18 @@ def build_prompt(state: dict, tool_data: dict, search_data: dict) -> str:
     for query, result in search_data.items():
         parts.append(f"\n### Query: `{query}`\n```json\n{result}\n```")
 
-    parts.append("""
+    parts.append(f"""
 ## YOUR TASK
 
-Write the complete EDB Daily Macro Intelligence Brief now.
+Write the complete EDB Daily Macro Intelligence Brief now, following every instruction in your system prompt (CLAUDE.md) exactly.
 
-**FORMAT — copy this header block exactly:**
-```
----
-# EDB Daily Macro Intelligence Brief
-**Date:** {full weekday, DD Month YYYY}
-**Agent version:** v{N}
-**Generated:** {HH:MM UTC}
-**Signals processed:** {N}
-**Signals passing mandate filter:** {N}
+All data has been pre-gathered above — do NOT attempt to call tools, fetch URLs, or run code. Use only the data provided.
 
----
-```
-Then continue with:
-1. `## Executive Brief (Type A)` — **Headline:** (one sentence with [NEW]/[CONTINUING] labels), 2–3 para body with trend language from state.json streaks, sector impact matrix (all 5 rows, every row data-justified), **Key number:** (one AED figure), **Watch list — next 72 hours:** (3 named events)
-2. `## Credit Team Alert (Type B)` — signal, portfolio exposure, calculation block with ALL FOUR required calcs:
-   - **EIBOR ADS ±25/50bps:** First line of block must be `EIBOR source: estimated (...)`. Scenario lines must use format `+25bps scenario: AED X (Δ AED Y)` — no space between `+25` and `bps`.
-   - **Oil fiscal calc:** First output line must be `UAE oil revenue impact: AED X` — then show ×3.6725 FX step and annual figure.
-   - **Petrochemical pass-through:** 60% rate × AED 17.5bn feedstock × Brent delta → AED result.
-   - **Op300bn run-rate:** (current−133)/(300−133) gap method — not current/300.
-   Scenario table: compact 2-row (Base case | Reversal) within 150 chars. Action flag with team/threshold/milestone.
-3. `## Stakeholder Bulletin (Type C)` — What happened / What it means / What businesses should consider
-4. `*Sources:*` and `*Methodology:*` sections — EIBOR estimation basis must appear in the calc block AND here
+Three things to note for this standalone run:
+1. Start the brief with `---` (a plain markdown horizontal rule, not YAML frontmatter), then `# EDB Daily Macro Intelligence Brief`, then the bold header fields, then another `---`
+2. The brief must end with both a *Sources* section and a *Methodology* section — do not stop before writing them even if the brief runs long
+3. Current datetime for the header: {now_utc}
 
-Do NOT add YAML frontmatter. Start the output with `---` (a plain horizontal rule), then the `#` heading.
 Output ONLY the brief markdown — no preamble, no explanation.
 """)
 
