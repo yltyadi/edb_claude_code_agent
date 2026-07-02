@@ -324,11 +324,10 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
                             interactive=True,
                             scale=5,
                         )
-                        refresh_btn = gr.Button("🔄", scale=0, min_width=50)
+                        refresh_btn = gr.Button("🔄", scale=0)
 
                     brief_out = gr.Markdown(
                         value="*Select a brief from the dropdown, or generate a new one.*",
-                        height=700,
                     )
 
             # Event wiring
