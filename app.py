@@ -24,6 +24,20 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import requests
+
+# Gradio 4–5 early versions import HfFolder which was removed from huggingface_hub 0.26+.
+# We don't use HF OAuth (secrets come from Space env vars), so a no-op stub is sufficient.
+try:
+    from huggingface_hub import HfFolder  # noqa: F401 — already present, nothing to do
+except ImportError:
+    import huggingface_hub as _hf
+    import types as _types
+    _hf.HfFolder = _types.SimpleNamespace(  # type: ignore[attr-defined]
+        get_token=lambda: None,
+        save_token=lambda token: None,
+        delete_token=lambda: None,
+    )
+
 import gradio as gr
 
 # ── GitHub API ────────────────────────────────────────────────────────────────
