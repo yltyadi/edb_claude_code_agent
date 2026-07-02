@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "agent_version": "v2",
-  "last_updated": "2026-07-01",
+  "last_updated": "2026-07-02",
   "last_run": {
-    "date": "2026-07-01",
-    "timestamp": "2026-07-01T15:02:26.941137",
-    "brief_path": "outputs/brief_v2_2026-07-01_1502.md",
+    "date": "2026-07-02",
+    "timestamp": "2026-07-02T08:27:33.304144",
+    "brief_path": "outputs/brief_v2_2026-07-02_0827.md",
     "agent_version": "v2"
   },
   "baselines": {
@@ -43,7 +43,7 @@
     "brent_direction": "up",
     "brent_direction_sessions": 2,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 202,
+    "eibor_unchanged_days": 203,
     "cbuae_rate_unchanged_days": 200
   },
   "signals_fired_last_run": [
@@ -172,7 +172,7 @@
         "v1_vs_gen": 46.6
       },
       "dimensions_patched_v2": [],
-      "auto_check_notes": "v2 recovers to 96.0 after 1040 regression (70.6). All 7 LLM dimensions score 5/5 — LLM component achieves 60.0/60, matching Claude Code baseline. Two remaining auto check failures are regex artifacts: (1) has_eibor_sensitivity — brief uses '+25 bps' (with space) vs required '+25bps' (no space); content is substantively correct; (2) has_oil_revenue_calc — brief uses 'Oil fiscal buffer' heading vs required 'oil revenues by an estimated AED' phrasing; the June 25 fix ('UAE oil revenue impact: AED X' as first calc line) was not applied in this run. Both fixes are one-line changes to the brief calc block output. No CLAUDE.md patches required this cycle — all dimensions ≥4. Format fixes noted for next run."
+      "auto_check_notes": "v2 recovers to 96.0 after 1040 regression (70.6). All 7 LLM dimensions score 5/5 \u2014 LLM component achieves 60.0/60, matching Claude Code baseline. Two remaining auto check failures are regex artifacts: (1) has_eibor_sensitivity \u2014 brief uses '+25 bps' (with space) vs required '+25bps' (no space); content is substantively correct; (2) has_oil_revenue_calc \u2014 brief uses 'Oil fiscal buffer' heading vs required 'oil revenues by an estimated AED' phrasing; the June 25 fix ('UAE oil revenue impact: AED X' as first calc line) was not applied in this run. Both fixes are one-line changes to the brief calc block output. No CLAUDE.md patches required this cycle \u2014 all dimensions \u22654. Format fixes noted for next run."
     },
     {
       "eval_date": "2026-07-01",
