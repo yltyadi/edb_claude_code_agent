@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "agent_version": "v2",
-  "last_updated": "2026-07-02",
+  "last_updated": "2026-07-03",
   "last_run": {
-    "date": "2026-07-02",
-    "timestamp": "2026-07-02T08:27:33.304144",
-    "brief_path": "outputs/brief_v2_2026-07-02_0827.md",
+    "date": "2026-07-03",
+    "timestamp": "2026-07-03T12:43:23.279228",
+    "brief_path": "outputs/brief_v2_2026-07-03_1243.md",
     "agent_version": "v2"
   },
   "baselines": {
@@ -43,7 +43,7 @@
     "brent_direction": "up",
     "brent_direction_sessions": 2,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 203,
+    "eibor_unchanged_days": 204,
     "cbuae_rate_unchanged_days": 200
   },
   "signals_fired_last_run": [
@@ -114,7 +114,7 @@
         "v1_vs_gen": 46.6
       },
       "dimensions_patched_v2": [],
-      "auto_check_notes": "First 100.0 on the standalone run_agent.py pipeline. No new brief generated today (July 2 GitHub Actions run failed — silent Python failure masked by tee pipe; fixed with set -o pipefail). Evaluating 1502 brief under corrected rubric: has_eibor_sensitivity pattern updated to accept '+25 bps' (with space) and drop the AED proximity requirement; has_oil_revenue_calc updated to accept 'fiscal buffer', 'oil fiscal', 'fiscal cushion' in addition to 'oil revenue'. Both were evaluation artifacts penalising correct content. v2 retroactively achieves 20/20. All 7 LLM dimensions 5/5. No CLAUDE.md patches needed."
+      "auto_check_notes": "First 100.0 on the standalone run_agent.py pipeline. No new brief generated today (July 2 GitHub Actions run failed \u2014 silent Python failure masked by tee pipe; fixed with set -o pipefail). Evaluating 1502 brief under corrected rubric: has_eibor_sensitivity pattern updated to accept '+25 bps' (with space) and drop the AED proximity requirement; has_oil_revenue_calc updated to accept 'fiscal buffer', 'oil fiscal', 'fiscal cushion' in addition to 'oil revenue'. Both were evaluation artifacts penalising correct content. v2 retroactively achieves 20/20. All 7 LLM dimensions 5/5. No CLAUDE.md patches needed."
     },
     {
       "eval_date": "2026-07-01",
