@@ -606,33 +606,33 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
 
             # Wiring: brief generation
             run_btn.click(
-                fn=run_brief, inputs=[], outputs=[log_out, brief_out],
+                fn=run_brief, inputs=[], outputs=[log_out, brief_out], api_name=False,
             ).then(
-                fn=lambda brief: brief, inputs=[brief_out], outputs=[brief_state],
+                fn=lambda brief: brief, inputs=[brief_out], outputs=[brief_state], api_name=False,
             )
 
             # Wiring: dropdown browse
-            refresh_btn.click(fn=refresh_brief_dropdown, outputs=[brief_dropdown])
+            refresh_btn.click(fn=refresh_brief_dropdown, outputs=[brief_dropdown], api_name=False)
             brief_dropdown.change(
-                fn=load_brief, inputs=[brief_dropdown], outputs=[brief_out],
+                fn=load_brief, inputs=[brief_dropdown], outputs=[brief_out], api_name=False,
             ).then(
-                fn=lambda brief: brief, inputs=[brief_out], outputs=[brief_state],
+                fn=lambda brief: brief, inputs=[brief_out], outputs=[brief_state], api_name=False,
             )
 
             # Wiring: chat
             chat_send.click(
-                fn=chat_fn, inputs=[chat_input, chatbot, brief_state], outputs=[chatbot],
+                fn=chat_fn, inputs=[chat_input, chatbot, brief_state], outputs=[chatbot], api_name=False,
             ).then(
-                fn=lambda: "", outputs=[chat_input],
+                fn=lambda: "", outputs=[chat_input], api_name=False,
             )
             chat_input.submit(
-                fn=chat_fn, inputs=[chat_input, chatbot, brief_state], outputs=[chatbot],
+                fn=chat_fn, inputs=[chat_input, chatbot, brief_state], outputs=[chatbot], api_name=False,
             ).then(
-                fn=lambda: "", outputs=[chat_input],
+                fn=lambda: "", outputs=[chat_input], api_name=False,
             )
 
             # On load: populate dropdown
-            demo.load(fn=refresh_brief_dropdown, outputs=[brief_dropdown])
+            demo.load(fn=refresh_brief_dropdown, outputs=[brief_dropdown], api_name=False)
 
         # ── Tab 2: Evaluation ───────────────────────────────────────────────
         with gr.Tab("📊 Evaluation"):
@@ -648,8 +648,7 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
                 eval_btn = gr.Button("▶  Run Evaluation", variant="primary", size="lg")
                 gr.Markdown(
                     "*Fetches latest v2/v1/general briefs from GitHub, runs 20 checks + "
-                    "LLM judging in one API call (~45 seconds), commits report.*",
-                    container=False,
+                    "LLM judging in one API call (~45 seconds), commits report.*"
                 )
 
             with gr.Row():
@@ -668,17 +667,17 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
                     eval_out = gr.Markdown(value="*Run an evaluation or select a past report.*")
 
             # Wiring: eval
-            eval_btn.click(fn=run_eval, outputs=[eval_log, eval_out]).then(
-                fn=refresh_eval_dropdown, outputs=[eval_dropdown],
+            eval_btn.click(fn=run_eval, outputs=[eval_log, eval_out], api_name=False).then(
+                fn=refresh_eval_dropdown, outputs=[eval_dropdown], api_name=False,
             ).then(
-                fn=make_score_chart, outputs=[score_plot],
+                fn=make_score_chart, outputs=[score_plot], api_name=False,
             )
-            refresh_eval_btn.click(fn=refresh_eval_dropdown, outputs=[eval_dropdown])
-            eval_dropdown.change(fn=load_eval, inputs=[eval_dropdown], outputs=[eval_out])
+            refresh_eval_btn.click(fn=refresh_eval_dropdown, outputs=[eval_dropdown], api_name=False)
+            eval_dropdown.change(fn=load_eval, inputs=[eval_dropdown], outputs=[eval_out], api_name=False)
 
             # On load: populate eval dropdown + chart
-            demo.load(fn=refresh_eval_dropdown, outputs=[eval_dropdown])
-            demo.load(fn=make_score_chart, outputs=[score_plot])
+            demo.load(fn=refresh_eval_dropdown, outputs=[eval_dropdown], api_name=False)
+            demo.load(fn=make_score_chart, outputs=[score_plot], api_name=False)
 
 if __name__ == "__main__":
     demo.launch()
