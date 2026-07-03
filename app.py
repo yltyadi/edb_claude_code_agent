@@ -199,41 +199,47 @@ def load_brief(name: str) -> str:
 # ── Tab 1 — Streaming chat ────────────────────────────────────────────────────
 
 def chat_fn(message: str, history: list, brief_content: str):
-    """Streaming chat about the current brief."""
+    """Streaming chat about the current brief. history is Gradio 5 messages format (list of dicts)."""
     if not brief_content or len(brief_content.strip()) < 50:
-        yield history + [[message, "Please load or generate a brief first."]]
+        yield history + [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": "Please load or generate a brief first."},
+        ]
         return
     if not _OR_KEY:
-        yield history + [[message, "❌ OPENROUTER_API_KEY not set."]]
+        yield history + [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": "❌ OPENROUTER_API_KEY not set in Space secrets."},
+        ]
         return
 
     client = _client(CHAT_MODEL)
-    messages = [
+    llm_messages = [
         {"role": "system", "content": (
             "You are an EDB (Emirates Development Bank) senior macro analyst. "
             "Answer questions concisely and precisely based solely on the brief below. "
             "Cite specific numbers from the brief when relevant. "
-            f"Do not speculate beyond what the brief says.\n\n"
+            "Do not speculate beyond what the brief says.\n\n"
             f"BRIEF:\n{brief_content[:7000]}"
         )},
     ]
-    for user_msg, bot_msg in history:
-        if user_msg:
-            messages.append({"role": "user", "content": user_msg})
-        if bot_msg:
-            messages.append({"role": "assistant", "content": bot_msg})
-    messages.append({"role": "user", "content": message})
+    # history is [{role: "user"|"assistant", content: "..."}]
+    for msg in history:
+        llm_messages.append({"role": msg["role"], "content": msg["content"]})
+    llm_messages.append({"role": "user", "content": message})
 
     stream = client.chat.completions.create(
-        model=CHAT_MODEL, messages=messages, max_tokens=600, temperature=0.2, stream=True,
+        model=CHAT_MODEL, messages=llm_messages, max_tokens=600, temperature=0.2, stream=True,
     )
 
     partial = ""
-    new_history = history + [[message, ""]]
+    new_history = history + [
+        {"role": "user", "content": message},
+        {"role": "assistant", "content": ""},
+    ]
     for chunk in stream:
-        delta = chunk.choices[0].delta.content or ""
-        partial += delta
-        new_history[-1][1] = partial
+        partial += chunk.choices[0].delta.content or ""
+        new_history[-1]["content"] = partial
         yield new_history
 
 # ── Tab 2 — Evaluation ────────────────────────────────────────────────────────
@@ -588,10 +594,9 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
             gr.Markdown("---\n### Ask questions about this brief")
             gr.Markdown(
                 "*Load a brief (generate or select from dropdown), then ask anything. "
-                "Answers are grounded in the brief content only.*",
-                container=False,
+                "Answers are grounded in the brief content only.*"
             )
-            chatbot = gr.Chatbot(label="Brief Q&A", height=350, bubble_full_width=False)
+            chatbot = gr.Chatbot(label="Brief Q&A", height=350, type="messages")
             with gr.Row():
                 chat_input = gr.Textbox(
                     placeholder="e.g. 'What is the EIBOR impact on a AED 5M loan?' or 'Summarise the sector matrix'",
