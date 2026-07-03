@@ -2,15 +2,14 @@
 """
 EDB Macro Intelligence — HuggingFace Spaces frontend.
 
-Two tabs:
-  Tab 1 — Daily Brief: generate a new brief (streaming), browse past briefs
-  Tab 2 — Improvement Story: score chart + why v2 beats a general agent
+Tab 1 — Daily Brief: generate, browse, streaming Q&A chat
+Tab 2 — Evaluation: run rubric eval (auto checks + LLM judging), score history
 
 Required HF Space secrets:
-  OPENROUTER_API_KEY  — OpenRouter key for the LLM call
-  FRED_API_KEY        — FRED API key for economic data
-  GITHUB_TOKEN        — Personal access token with repo write access
-  GITHUB_REPO         — e.g. "yltyadi/edb-macro-agent-v2"
+  OPENROUTER_API_KEY  — OpenRouter key (required)
+  FRED_API_KEY        — FRED API key (required for brief generation)
+  GITHUB_TOKEN        — PAT with repo write access (required)
+  GITHUB_REPO         — e.g. "yltyadi/edb-macro-agent-v2" (required)
 """
 
 import base64
@@ -18,6 +17,8 @@ import json
 import os
 import re
 import subprocess
+import sys
+from datetime import datetime
 from pathlib import Path
 
 import matplotlib
@@ -25,10 +26,11 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import requests
 
-# Gradio 4–5 early versions import HfFolder which was removed from huggingface_hub 0.26+.
-# We don't use HF OAuth (secrets come from Space env vars), so a no-op stub is sufficient.
+# ── HuggingFace Hub compat patch ─────────────────────────────────────────────
+# Gradio 4–5 early versions import HfFolder which was removed in huggingface_hub 0.26+.
+# We don't use HF OAuth (secrets come from Space env vars), so a no-op stub is fine.
 try:
-    from huggingface_hub import HfFolder  # noqa: F401 — already present, nothing to do
+    from huggingface_hub import HfFolder  # noqa: F401
 except ImportError:
     import huggingface_hub as _hf
     import types as _types
@@ -39,107 +41,122 @@ except ImportError:
     )
 
 import gradio as gr
+from openai import OpenAI
 
-# ── GitHub API ────────────────────────────────────────────────────────────────
+# ── Config ────────────────────────────────────────────────────────────────────
+ROOT = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+
 _GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
-_GITHUB_REPO  = os.environ.get("GITHUB_REPO", "")   # e.g. "yltyadi/edb-macro-agent-v2"
-_GH_BASE      = "https://api.github.com"
+_GITHUB_REPO  = os.environ.get("GITHUB_REPO", "")
+_OR_KEY       = os.environ.get("OPENROUTER_API_KEY", "")
+MODEL         = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-6")
+CHAT_MODEL    = os.environ.get("OPENROUTER_CHAT_MODEL", "anthropic/claude-haiku-4-5-20251001")
 
+# Load rubric (available in repo at eval/rubric.py)
+try:
+    from eval.rubric import (
+        AUTOMATED_CHECKS, LLM_DIMENSIONS,
+        DIMENSION_WEIGHTS, AUTO_WEIGHT, LLM_WEIGHT,
+    )
+    _RUBRIC_OK = True
+except ImportError:
+    _RUBRIC_OK = False
 
-def _gh_headers() -> dict:
+# ── GitHub helpers ────────────────────────────────────────────────────────────
+def _gh_headers():
     return {"Authorization": f"token {_GITHUB_TOKEN}", "Accept": "application/vnd.github+json"}
 
-
 def gh_get(path: str) -> tuple:
-    """Fetch a file from the repo. Returns (content_str, sha) or (None, None)."""
-    r = requests.get(f"{_GH_BASE}/repos/{_GITHUB_REPO}/contents/{path}",
+    r = requests.get(f"https://api.github.com/repos/{_GITHUB_REPO}/contents/{path}",
                      headers=_gh_headers(), timeout=20)
     if r.ok:
         d = r.json()
         return base64.b64decode(d["content"]).decode(), d["sha"]
     return None, None
 
-
 def gh_put(path: str, content: str, sha, message: str) -> bool:
-    """Create or update a file in the repo."""
     payload = {"message": message,
-                "content": base64.b64encode(content.encode()).decode()}
+               "content": base64.b64encode(content.encode()).decode()}
     if sha:
         payload["sha"] = sha
-    r = requests.put(f"{_GH_BASE}/repos/{_GITHUB_REPO}/contents/{path}",
+    r = requests.put(f"https://api.github.com/repos/{_GITHUB_REPO}/contents/{path}",
                      headers={**_gh_headers(), "Content-Type": "application/json"},
                      json=payload, timeout=20)
     return r.status_code in (200, 201)
 
-
-def list_briefs() -> list:
-    """Return brief filenames sorted newest-first."""
-    r = requests.get(f"{_GH_BASE}/repos/{_GITHUB_REPO}/contents/outputs",
+def _list_outputs(pattern: str) -> list:
+    r = requests.get(f"https://api.github.com/repos/{_GITHUB_REPO}/contents/outputs",
                      headers=_gh_headers(), timeout=15)
     if not r.ok:
         return []
-    pat = re.compile(r"brief_v\d+_\d{4}-\d{2}-\d{2}_\d{4}\.md")
-    names = [f["name"] for f in r.json()
-             if isinstance(f, dict) and pat.match(f.get("name", ""))]
-    return sorted(names, reverse=True)
+    pat = re.compile(pattern)
+    return sorted([f["name"] for f in r.json()
+                   if isinstance(f, dict) and pat.match(f.get("name", ""))], reverse=True)
 
+def list_briefs():
+    return _list_outputs(r"brief_v\d+_\d{4}-\d{2}-\d{2}_\d{4}\.md")
 
-# ── State sync ────────────────────────────────────────────────────────────────
+def list_evals():
+    return _list_outputs(r"eval_\d{4}-\d{2}-\d{2}.*\.md")
 
-def _sync_state_from_github() -> None:
-    """Pull latest state.json from GitHub to local disk before each run."""
+# ── OpenRouter client ─────────────────────────────────────────────────────────
+def _client(model: str = MODEL) -> OpenAI | None:
+    if not _OR_KEY:
+        return None
+    return OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=_OR_KEY,
+        default_headers={
+            "HTTP-Referer": f"https://huggingface.co/spaces/{_GITHUB_REPO}",
+            "X-Title": "EDB Macro Intelligence Agent",
+        },
+    )
+
+# ── Tab 1 — Brief generation ──────────────────────────────────────────────────
+
+def _sync_state():
     content, _ = gh_get("outputs/state.json")
     if content:
         Path("outputs").mkdir(exist_ok=True)
         Path("outputs/state.json").write_text(content)
 
-
-def _push_run_to_github(brief_path: str, date: str) -> bool:
-    """Commit the generated brief + updated state.json back to GitHub."""
+def _push_run(brief_path: str, date: str) -> bool:
     ok = True
-    # Brief
-    brief_text = Path(brief_path).read_text()
-    _, brief_sha = gh_get(brief_path)
-    ok = gh_put(brief_path, brief_text, brief_sha, f"brief: {date} [HF Spaces]") and ok
-    # State
+    _, sha = gh_get(brief_path)
+    ok = gh_put(brief_path, Path(brief_path).read_text(), sha,
+                f"brief: {date} [HF Spaces]") and ok
     state_p = Path("outputs/state.json")
     if state_p.exists():
-        _, state_sha = gh_get("outputs/state.json")
-        ok = gh_put("outputs/state.json", state_p.read_text(), state_sha,
+        _, s_sha = gh_get("outputs/state.json")
+        ok = gh_put("outputs/state.json", state_p.read_text(), s_sha,
                     f"state: {date} [HF Spaces]") and ok
     return ok
 
-
-# ── Tab 1: Run brief ──────────────────────────────────────────────────────────
-
 def run_brief():
-    """Generator — streams agent log lines then yields the final brief markdown."""
     if not _GITHUB_TOKEN:
-        yield "❌ `GITHUB_TOKEN` secret is not set.\nAdd it under Space → Settings → Variables and secrets.", ""
+        yield "❌ `GITHUB_TOKEN` not set in Space secrets.", ""
         return
     if not _GITHUB_REPO:
-        yield "❌ `GITHUB_REPO` secret is not set (e.g. `yltyadi/edb-macro-agent-v2`).", ""
+        yield "❌ `GITHUB_REPO` not set in Space secrets.", ""
         return
 
     log = "🔄 Syncing state.json from GitHub…\n"
     yield log, ""
     try:
-        _sync_state_from_github()
+        _sync_state()
         log += "✅ State synced.\n\n"
-    except Exception as exc:
-        log += f"⚠️ State sync failed (proceeding anyway): {exc}\n\n"
+    except Exception as e:
+        log += f"⚠️ State sync failed (proceeding anyway): {e}\n\n"
     yield log, ""
 
-    log += "🚀 Running EDB agent — takes 2–3 minutes…\n"
+    log += "🚀 Running EDB agent — takes ~2–3 minutes…\n"
     yield log, ""
 
     proc = subprocess.Popen(
         ["python", "run_agent.py"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
-        env={**os.environ},
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True, bufsize=1, env={**os.environ},
     )
     for line in proc.stdout:
         log += line
@@ -147,7 +164,7 @@ def run_brief():
     proc.wait()
 
     if proc.returncode != 0:
-        yield log + "\n❌ Agent exited with a non-zero code. Check the log above.", ""
+        yield log + "\n❌ Agent exited with a non-zero code.", ""
         return
 
     summary = None
@@ -158,220 +175,505 @@ def run_brief():
             except Exception:
                 pass
 
-    if not summary:
-        yield log + "\n❌ SUMMARY_JSON not found in output — brief may not have been written.", ""
-        return
-    if not Path(summary.get("brief_path", "")).exists():
-        yield log + f"\n❌ Expected brief file `{summary.get('brief_path')}` not on disk.", ""
+    if not summary or not Path(summary.get("brief_path", "")).exists():
+        yield log + "\n❌ Brief file not found after run.", ""
         return
 
     log += f"\n📤 Committing `{summary['brief_name']}` to GitHub…\n"
     yield log, ""
 
-    ok = _push_run_to_github(summary["brief_path"], summary["date"])
-    if ok:
-        log += "✅ Committed to GitHub successfully.\n"
-    else:
-        log += "⚠️ Brief generated locally but GitHub commit failed — verify GITHUB_TOKEN has `repo` write scope.\n"
+    ok = _push_run(summary["brief_path"], summary["date"])
+    log += "✅ Committed.\n" if ok else "⚠️ Commit failed — check GITHUB_TOKEN has `repo` scope.\n"
+    yield log, Path(summary["brief_path"]).read_text()
 
-    brief_content = Path(summary["brief_path"]).read_text()
-    yield log, brief_content
-
-
-def refresh_dropdown():
+def refresh_brief_dropdown():
     briefs = list_briefs()
     return gr.Dropdown(choices=briefs, value=briefs[0] if briefs else None)
 
-
-def load_brief_from_github(name: str) -> str:
+def load_brief(name: str) -> str:
     if not name:
         return ""
     content, _ = gh_get(f"outputs/{name}")
     return content or f"*(Could not load `{name}` from GitHub.)*"
 
+# ── Tab 1 — Streaming chat ────────────────────────────────────────────────────
 
-# ── Tab 2: Improvement story ──────────────────────────────────────────────────
+def chat_fn(message: str, history: list, brief_content: str):
+    """Streaming chat about the current brief."""
+    if not brief_content or len(brief_content.strip()) < 50:
+        yield history + [[message, "Please load or generate a brief first."]]
+        return
+    if not _OR_KEY:
+        yield history + [[message, "❌ OPENROUTER_API_KEY not set."]]
+        return
+
+    client = _client(CHAT_MODEL)
+    messages = [
+        {"role": "system", "content": (
+            "You are an EDB (Emirates Development Bank) senior macro analyst. "
+            "Answer questions concisely and precisely based solely on the brief below. "
+            "Cite specific numbers from the brief when relevant. "
+            f"Do not speculate beyond what the brief says.\n\n"
+            f"BRIEF:\n{brief_content[:7000]}"
+        )},
+    ]
+    for user_msg, bot_msg in history:
+        if user_msg:
+            messages.append({"role": "user", "content": user_msg})
+        if bot_msg:
+            messages.append({"role": "assistant", "content": bot_msg})
+    messages.append({"role": "user", "content": message})
+
+    stream = client.chat.completions.create(
+        model=CHAT_MODEL, messages=messages, max_tokens=600, temperature=0.2, stream=True,
+    )
+
+    partial = ""
+    new_history = history + [[message, ""]]
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content or ""
+        partial += delta
+        new_history[-1][1] = partial
+        yield new_history
+
+# ── Tab 2 — Evaluation ────────────────────────────────────────────────────────
+
+def _run_auto_checks(content: str | None) -> dict:
+    if not content or not _RUBRIC_OK:
+        return {}
+    return {c["id"]: bool(re.search(c["pattern"], content)) for c in AUTOMATED_CHECKS}
+
+def _fmt_check(val: bool) -> str:
+    return "✓" if val else "✗"
+
+def _score_auto(checks: dict) -> float:
+    if not checks:
+        return 0.0
+    return sum(checks.values()) / len(checks) * 100 * AUTO_WEIGHT
+
+def _score_llm(dims: dict) -> float:
+    if not dims or not _RUBRIC_OK:
+        return 0.0
+    total = sum(dims.get(d["id"], 0) * d["weight"] for d in LLM_DIMENSIONS)
+    return total / 5 * 100 * LLM_WEIGHT
+
+def _build_eval_prompt(v2_brief: str, v1_brief: str, gen_brief: str) -> str:
+    def excerpt(text, n=3500):
+        if not text:
+            return "(not available)"
+        if len(text) <= n:
+            return text
+        return text[:2500] + "\n\n[…truncated…]\n\n" + text[-1000:]
+
+    dims_desc = "\n".join(
+        f"{i+1}. {d['name']} ({int(d['weight']*100)}%): {d['description'][:200]}"
+        for i, d in enumerate(LLM_DIMENSIONS)
+    )
+
+    return f"""You are evaluating three macro intelligence briefs for Emirates Development Bank.
+Score each brief 1–5 on each dimension (1=worst, 5=best).
+
+IMPORTANT NOTE on Trend & Continuity: v1 and General briefs have no cross-session state.json access.
+They are structurally capped at 2/5 for Trend & Continuity regardless of prose quality.
+
+DIMENSIONS:
+{dims_desc}
+
+--- BRIEF 1: v2 Agent (cross-session memory, streak language, CLAUDE.md feedback loop) ---
+{excerpt(v2_brief)}
+
+--- BRIEF 2: v1 Agent (EDB-structured pipeline, no cross-session memory) ---
+{excerpt(v1_brief)}
+
+--- BRIEF 3: General Agent (baseline Claude, no EDB tools or format) ---
+{excerpt(gen_brief)}
+
+Respond with ONLY valid JSON:
+{{
+  "v2":      {{"mandate_relevance":N,"data_grounding":N,"quantitative_accuracy":N,"structure_completeness":N,"action_specificity":N,"data_integrity":N,"trend_continuity":N}},
+  "v1":      {{"mandate_relevance":N,"data_grounding":N,"quantitative_accuracy":N,"structure_completeness":N,"action_specificity":N,"data_integrity":N,"trend_continuity":N}},
+  "general": {{"mandate_relevance":N,"data_grounding":N,"quantitative_accuracy":N,"structure_completeness":N,"action_specificity":N,"data_integrity":N,"trend_continuity":N}},
+  "reasoning": {{
+    "v2": "2-3 sentence summary of v2 brief quality",
+    "v1": "2-3 sentence summary of v1 brief quality",
+    "general": "2-3 sentence summary of general brief quality"
+  }}
+}}"""
+
+def _format_eval_report(
+    date_str: str,
+    v2_name: str, v1_name: str, gen_name: str,
+    v2_checks: dict, v1_checks: dict, gen_checks: dict,
+    llm_scores: dict,
+) -> str:
+    v2_auto = sum(v2_checks.values()) if v2_checks else 0
+    v1_auto = sum(v1_checks.values()) if v1_checks else 0
+    gen_auto = sum(gen_checks.values()) if gen_checks else 0
+    n = len(AUTOMATED_CHECKS) if _RUBRIC_OK else 20
+
+    v2_dims  = llm_scores.get("v2", {})
+    v1_dims  = llm_scores.get("v1", {})
+    gen_dims = llm_scores.get("general", {})
+
+    def llm_pct(dims):
+        if not dims or not _RUBRIC_OK:
+            return 0.0
+        return sum(dims.get(d["id"], 0) * d["weight"] for d in LLM_DIMENSIONS) / 5
+
+    v2_final  = (v2_auto / n * AUTO_WEIGHT  + llm_pct(v2_dims)  * LLM_WEIGHT) * 100 if _RUBRIC_OK else 0
+    v1_final  = (v1_auto / n * AUTO_WEIGHT  + llm_pct(v1_dims)  * LLM_WEIGHT) * 100 if _RUBRIC_OK else 0
+    gen_final = (gen_auto / n * AUTO_WEIGHT + llm_pct(gen_dims) * LLM_WEIGHT) * 100 if _RUBRIC_OK else 0
+
+    # Auto checks table
+    rows = ""
+    if _RUBRIC_OK:
+        for c in AUTOMATED_CHECKS:
+            rows += (f"| {c['name']:<50} | {_fmt_check(v2_checks.get(c['id'], False))} "
+                     f"| {_fmt_check(v1_checks.get(c['id'], False))} "
+                     f"| {_fmt_check(gen_checks.get(c['id'], False))} |\n")
+
+    # LLM dims table
+    dim_rows = ""
+    if _RUBRIC_OK:
+        for d in LLM_DIMENSIONS:
+            dim_rows += (f"| {d['name']:<28} | {int(d['weight']*100)}% "
+                         f"| {v2_dims.get(d['id'], '—')}/5 "
+                         f"| {v1_dims.get(d['id'], '—')}/5 "
+                         f"| {gen_dims.get(d['id'], '—')}/5 |\n")
+
+    reasoning = llm_scores.get("reasoning", {})
+
+    return f"""# EDB Agent Evaluation Report
+**Date:** {date_str}
+**v2 brief:** outputs/{v2_name}
+**v1 brief:** outputs/{v1_name or '(none)'}
+**General brief:** outputs/{gen_name or '(none)'}
+**Rubric version:** v2 ({n} automated checks, 7 LLM dimensions)
+**Generated by:** HF Spaces eval runner
+
+---
+
+## Automated Checks (40% of score)
+
+| Check | v2 | v1 | General |
+|-------|:--:|:--:|:-------:|
+{rows}| **TOTAL** | **{v2_auto}/{n}** | **{v1_auto}/{n}** | **{gen_auto}/{n}** |
+
+---
+
+## LLM Dimensions (60% of score)
+
+| Dimension | Wt | v2 | v1 | General |
+|-----------|:--:|:--:|:--:|:-------:|
+{dim_rows}
+
+### Reasoning
+
+**v2 Agent:** {reasoning.get('v2', '—')}
+
+**v1 Agent:** {reasoning.get('v1', '—')}
+
+**General Agent:** {reasoning.get('general', '—')}
+
+---
+
+## Final Scores
+
+|                      | v2 Agent | v1 Agent | General |
+|----------------------|:--------:|:--------:|:-------:|
+| Automated (40%)      | {v2_auto/n*40:.1f}    | {v1_auto/n*40:.1f}    | {gen_auto/n*40:.1f}   |
+| LLM Dimensions (60%) | {llm_pct(v2_dims)*60:.1f}    | {llm_pct(v1_dims)*60:.1f}    | {llm_pct(gen_dims)*60:.1f}   |
+| **Final Score**      | **{v2_final:.1f} / 100** | **{v1_final:.1f} / 100** | **{gen_final:.1f} / 100** |
+| **v2 vs v1**         | **{v2_final-v1_final:+.1f} pts** | | |
+| **v2 vs General**    | **{v2_final-gen_final:+.1f} pts** | | |
+"""
+
+def run_eval():
+    if not _GITHUB_TOKEN or not _GITHUB_REPO:
+        yield "❌ GITHUB_TOKEN or GITHUB_REPO not set.", ""
+        return
+    if not _OR_KEY:
+        yield "❌ OPENROUTER_API_KEY not set — needed for LLM judging.", ""
+        return
+
+    log = "🔍 Fetching brief list from GitHub…\n"
+    yield log, ""
+
+    all_files = _list_outputs(r"brief_.*\.md")
+    v2_name  = next((f for f in all_files if re.match(r"brief_v2_", f)), None)
+    v1_name  = next((f for f in all_files if re.match(r"brief_v1_", f)), None)
+    gen_name = next((f for f in all_files if re.match(r"brief_general_", f)), None)
+
+    log += f"  v2:  {v2_name or '(not found)'}\n"
+    log += f"  v1:  {v1_name or '(not found)'}\n"
+    log += f"  gen: {gen_name or '(not found)'}\n\n"
+    yield log, ""
+
+    if not v2_name:
+        yield log + "❌ No v2 brief found. Generate a brief first.", ""
+        return
+
+    log += "📥 Fetching brief content from GitHub…\n"
+    yield log, ""
+
+    v2_content,  _ = gh_get(f"outputs/{v2_name}")
+    v1_content,  _ = gh_get(f"outputs/{v1_name}")  if v1_name  else (None, None)
+    gen_content, _ = gh_get(f"outputs/{gen_name}") if gen_name else (None, None)
+
+    log += "🔢 Running 20 automated checks…\n"
+    yield log, ""
+
+    v2_checks  = _run_auto_checks(v2_content)
+    v1_checks  = _run_auto_checks(v1_content)
+    gen_checks = _run_auto_checks(gen_content)
+
+    passed = sum(v2_checks.values())
+    log += f"  v2: {passed}/20 automated checks passed\n\n"
+    yield log, ""
+
+    log += "🤖 Calling LLM to judge 7 dimensions × 3 briefs (one API call)…\n"
+    yield log, ""
+
+    prompt = _build_eval_prompt(
+        v2_content or "", v1_content or "", gen_content or ""
+    )
+    client = _client(MODEL)
+    try:
+        resp = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1500,
+            temperature=0.1,
+        )
+        raw = resp.choices[0].message.content.strip()
+        # strip markdown code fences if present
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+        llm_scores = json.loads(raw)
+        log += "✅ LLM judging complete.\n\n"
+    except Exception as e:
+        log += f"⚠️ LLM judging failed: {e}\nShowing automated checks only.\n\n"
+        llm_scores = {}
+    yield log, ""
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    report = _format_eval_report(
+        date_str, v2_name, v1_name or "", gen_name or "",
+        v2_checks, v1_checks, gen_checks, llm_scores,
+    )
+
+    log += "📤 Committing eval report to GitHub…\n"
+    yield log, ""
+
+    report_name = f"eval_{date_str}.md"
+    _, existing_sha = gh_get(f"outputs/{report_name}")
+    ok = gh_put(f"outputs/{report_name}", report, existing_sha,
+                f"eval: {date_str} [HF Spaces]")
+    log += f"✅ Committed `{report_name}`.\n" if ok else "⚠️ Commit failed.\n"
+    yield log, report
+
+def refresh_eval_dropdown():
+    evals = list_evals()
+    return gr.Dropdown(choices=evals, value=evals[0] if evals else None)
+
+def load_eval(name: str) -> str:
+    if not name:
+        return ""
+    content, _ = gh_get(f"outputs/{name}")
+    return content or f"*(Could not load `{name}`.)*"
 
 def make_score_chart():
-    """Return a dark-themed bar chart comparing General / v1 / v2 scores."""
-    labels = ["General\n(baseline)", "v1 Agent\n(structured)", "v2 Agent\n(+ memory)"]
-    auto   = [10.0, 36.0, 40.0]
-    llm    = [25.9, 46.6, 60.0]
-    totals = [35.9, 82.6, 100.0]
+    """Score history chart from state.json eval_history."""
+    try:
+        state_raw, _ = gh_get("outputs/state.json")
+        if state_raw:
+            state = json.loads(state_raw)
+            history = state.get("eval_history", [])
+        else:
+            history = []
+    except Exception:
+        history = []
 
-    fig, ax = plt.subplots(figsize=(8, 4.5))
+    fig, ax = plt.subplots(figsize=(9, 4))
     fig.patch.set_facecolor("#0f1117")
     ax.set_facecolor("#0f1117")
 
-    x = [0, 1, 2]
-    w = 0.32
+    if history:
+        dates  = [e.get("eval_date", "?")[:10] for e in history]
+        v2_sc  = [e.get("scores", {}).get("v2",  {}).get("final_score", None) for e in history]
+        v1_sc  = [e.get("scores", {}).get("v1",  {}).get("final_score", None) for e in history]
+        gen_sc = [e.get("scores", {}).get("general", {}).get("final_score", None) for e in history]
 
-    # Auto bars (darker)
-    bars_auto = ax.bar([i - w / 2 for i in x], auto, width=w, zorder=3, alpha=0.9,
-                       color=["#44445a", "#5566aa", "#b8921e"], label="Automated (40%)")
-    # LLM bars (lighter)
-    bars_llm = ax.bar([i + w / 2 for i in x], llm, width=w, zorder=3, alpha=0.9,
-                      color=["#667788", "#8899cc", "#d9b040"], label="LLM Dimensions (60%)")
+        def _plot(scores, color, label):
+            pts = [(d, s) for d, s in zip(dates, scores) if s is not None]
+            if pts:
+                xs, ys = zip(*pts)
+                ax.plot(xs, ys, "o-", color=color, label=label, linewidth=2, markersize=5)
 
-    # Total annotation above each pair
-    for i, total in enumerate(totals):
-        y_top = max(auto[i], llm[i]) + 3
-        ax.text(i, y_top, f"{total:.1f}", ha="center", va="bottom",
-                color="white", fontweight="bold", fontsize=12)
+        _plot(v2_sc,  "#d4a843", "v2 Agent")
+        _plot(v1_sc,  "#8899cc", "v1 Agent")
+        _plot(gen_sc, "#667788", "General")
 
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels, color="#cccccc", fontsize=10)
-    ax.set_ylabel("Score contribution (/ 100 total)", color="#888888", fontsize=9)
-    ax.set_ylim(0, 115)
-    ax.set_title("EDB Agent Score Progression", color="white", fontsize=13, pad=12)
+        ax.set_ylim(0, 110)
+        if len(dates) > 5:
+            ax.set_xticks(ax.get_xticks()[::2])
+        plt.xticks(rotation=30, ha="right", color="#cccccc", fontsize=8)
+    else:
+        # Static fallback with known scores
+        labels = ["General\n(baseline)", "v1 Agent\n(structured)", "v2 Agent\n(+ memory)"]
+        auto   = [10.0, 36.0, 40.0]
+        llm    = [25.9, 46.6, 60.0]
+        totals = [35.9, 82.6, 100.0]
+        x, w = [0, 1, 2], 0.32
+        ax.bar([i - w/2 for i in x], auto, width=w, alpha=0.9, zorder=3,
+               color=["#44445a","#5566aa","#b8921e"], label="Automated (40%)")
+        ax.bar([i + w/2 for i in x], llm,  width=w, alpha=0.9, zorder=3,
+               color=["#667788","#8899cc","#d9b040"], label="LLM Dims (60%)")
+        for i, total in enumerate(totals):
+            ax.text(i, max(auto[i], llm[i]) + 3, f"{total:.1f}", ha="center", va="bottom",
+                    color="white", fontweight="bold", fontsize=12)
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, color="#cccccc", fontsize=10)
+        ax.set_ylim(0, 115)
+
+    ax.set_ylabel("Score / 100", color="#888888", fontsize=9)
+    ax.set_title("EDB Agent Score History", color="white", fontsize=13, pad=10)
     ax.tick_params(axis="y", colors="#666666")
-    ax.tick_params(axis="x", colors="#cccccc", length=0)
-    for spine in ("top", "right"):
-        ax.spines[spine].set_visible(False)
-    for spine in ("bottom", "left"):
-        ax.spines[spine].set_color("#333344")
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    for sp in ("bottom", "left"):
+        ax.spines[sp].set_color("#333344")
     ax.grid(axis="y", color="#222233", linewidth=0.5, zorder=0)
-    ax.legend(facecolor="#1a1a2e", edgecolor="#333344", labelcolor="#cccccc",
-              fontsize=9, loc="upper left")
-
+    ax.legend(facecolor="#1a1a2e", edgecolor="#333344", labelcolor="#cccccc", fontsize=9)
     fig.tight_layout(pad=1.5)
     return fig
 
-
-STORY_MD = """
-## How the EDB v2 Agent Beats a General Claude Response
-
-EDB needs daily macro intelligence mapped to its **five priority sectors**
-(Advanced Technology, Manufacturing, Healthcare, Renewables, Food Security)
-with quantified AED impacts, EIBOR transmission, and credit-team action flags.
-A general-purpose Claude response cannot produce any of this structurally.
-
----
-
-### Score breakdown
-
-| Agent | Automated (40%) | LLM Dimensions (60%) | **Final Score** |
-|-------|:---------------:|:--------------------:|:---------------:|
-| General (baseline) | 10.0 | 25.9 | **35.9 / 100** |
-| v1 (EDB pipeline) | 36.0 | 46.6 | **82.6 / 100** |
-| v2 (+ memory loop) | **40.0** | **60.0** | **100.0 / 100** |
-
-*20 automated checks (binary) + 7 LLM-judged dimensions (1–5, weighted).*
-
----
-
-### What each tier added
-
-**v1 over General (+46.7 pts)** — Added structural discipline: Type A Executive Brief,
-Type B Credit Alert with a live Python calculation block, Type C Stakeholder Bulletin,
-5-sector impact matrix, EIBOR ADS ±25/50bps scenarios, oil fiscal AED conversion
-(×3.6725 peg step shown explicitly), petrochemical pass-through (60% × AED 17.5bn feedstock),
-Op300bn gap method ((current − 133) / (300 − 133)), Sources + Methodology sections.
-None of this appears in a generic Claude response.
-
-**v2 over v1 (+17.4 pts)** — Added cross-session memory via `state.json`:
-- **Streak language** — "EIBOR unchanged for 201 consecutive days", "5th consecutive Fed hold"
-- **Delta calculations** — today's Brent vs prior-run baseline: Δ $6.60/bbl
-- **Signal classification** — `[NEW]` vs `[CONTINUING — N days]` for every signal in the brief
-- **CLAUDE.md feedback loop** — any dimension scoring ≤ 3 triggers an appended improvement note;
-  the next run picks it up as part of the system prompt
-
----
-
-### LLM dimension scores
-
-| Dimension | Weight | General | v1 | v2 |
-|-----------|:------:|:-------:|:--:|:--:|
-| Mandate Relevance      | 20% | 2/5 | 4/5 | **5/5** |
-| Data Grounding         | 16% | 3/5 | 4/5 | **5/5** |
-| Quantitative Accuracy  | 16% | 2/5 | 4/5 | **5/5** |
-| Structure Completeness | 12% | 1/5 | 4/5 | **5/5** |
-| Action Specificity     | 12% | 2/5 | 4/5 | **5/5** |
-| Data Integrity         | 12% | 3/5 | 5/5 | **5/5** |
-| Trend & Continuity     | 12% | 2/5 | 2/5 | **5/5** |
-
-*Trend & Continuity is structurally capped at 2/5 without `state.json` — v2's exclusive advantage.*
-
----
-
-### Why the General agent ceiling is stable at ~36
-
-The 35.9 score holds across five different evaluation dates (zero drift).
-The gaps are structural, not content quality: no EDB data tools, no state memory,
-no format — so the brief fails 15 of the 20 automated checks regardless of how good
-the prose is. Better prompting cannot close these gaps without the underlying pipeline.
-"""
-
-
-# ── Build UI ──────────────────────────────────────────────────────────────────
-
+# ── Gradio UI ─────────────────────────────────────────────────────────────────
 with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as demo:
     gr.Markdown(
         "# EDB Macro Intelligence Agent\n"
         "*Emirates Development Bank — Daily Macro Brief Pipeline*"
     )
 
+    # Shared state: current brief text (used by both tab 1 viewer and chat)
+    brief_state = gr.State("")
+
     with gr.Tabs():
 
         # ── Tab 1: Daily Brief ──────────────────────────────────────────────
         with gr.Tab("📋 Daily Brief"):
             with gr.Row():
-                # Left column — controls + log
-                with gr.Column(scale=1, min_width=320):
+                # Left: generate + log
+                with gr.Column(scale=1, min_width=300):
                     run_btn = gr.Button("▶  Generate New Brief", variant="primary", size="lg")
-                    gr.Markdown("*Streams live output. Takes ~2–3 minutes.*")
+                    gr.Markdown("*~2–3 minutes. Streams live.*")
                     log_out = gr.Textbox(
-                        label="Agent log",
-                        lines=20,
-                        max_lines=40,
-                        interactive=False,
+                        label="Agent log", lines=18, max_lines=35,
+                        interactive=False, show_copy_button=True,
                         placeholder="Click 'Generate New Brief' to start…",
-                        show_copy_button=True,
                     )
 
-                # Right column — brief viewer
+                # Right: brief viewer
                 with gr.Column(scale=2):
                     with gr.Row():
                         brief_dropdown = gr.Dropdown(
-                            label="Browse past briefs",
-                            choices=[],
-                            interactive=True,
-                            scale=5,
+                            label="Browse past briefs", choices=[],
+                            interactive=True, scale=5,
                         )
                         refresh_btn = gr.Button("🔄", scale=0)
-
                     brief_out = gr.Markdown(
-                        value="*Select a brief from the dropdown, or generate a new one.*",
+                        value="*Select a brief from the dropdown, or generate a new one.*"
                     )
 
-            # Event wiring
+            gr.Markdown("---\n### Ask questions about this brief")
+            gr.Markdown(
+                "*Load a brief (generate or select from dropdown), then ask anything. "
+                "Answers are grounded in the brief content only.*",
+                container=False,
+            )
+            chatbot = gr.Chatbot(label="Brief Q&A", height=350, bubble_full_width=False)
+            with gr.Row():
+                chat_input = gr.Textbox(
+                    placeholder="e.g. 'What is the EIBOR impact on a AED 5M loan?' or 'Summarise the sector matrix'",
+                    label="", scale=5, lines=1,
+                )
+                chat_send = gr.Button("Send", variant="primary", scale=0)
+
+            # Wiring: brief generation
             run_btn.click(
-                fn=run_brief,
-                inputs=[],
-                outputs=[log_out, brief_out],
+                fn=run_brief, inputs=[], outputs=[log_out, brief_out],
+            ).then(
+                fn=lambda brief: brief, inputs=[brief_out], outputs=[brief_state],
             )
-            refresh_btn.click(
-                fn=refresh_dropdown,
-                inputs=[],
-                outputs=[brief_dropdown],
-            )
+
+            # Wiring: dropdown browse
+            refresh_btn.click(fn=refresh_brief_dropdown, outputs=[brief_dropdown])
             brief_dropdown.change(
-                fn=load_brief_from_github,
-                inputs=[brief_dropdown],
-                outputs=[brief_out],
+                fn=load_brief, inputs=[brief_dropdown], outputs=[brief_out],
+            ).then(
+                fn=lambda brief: brief, inputs=[brief_out], outputs=[brief_state],
+            )
+
+            # Wiring: chat
+            chat_send.click(
+                fn=chat_fn, inputs=[chat_input, chatbot, brief_state], outputs=[chatbot],
+            ).then(
+                fn=lambda: "", outputs=[chat_input],
+            )
+            chat_input.submit(
+                fn=chat_fn, inputs=[chat_input, chatbot, brief_state], outputs=[chatbot],
+            ).then(
+                fn=lambda: "", outputs=[chat_input],
             )
 
             # On load: populate dropdown
-            demo.load(fn=refresh_dropdown, inputs=[], outputs=[brief_dropdown])
+            demo.load(fn=refresh_brief_dropdown, outputs=[brief_dropdown])
 
-        # ── Tab 2: Improvement story ────────────────────────────────────────
-        with gr.Tab("📈 Why v2 Beats a General Agent"):
-            score_plot = gr.Plot(label="")
-            gr.Markdown(STORY_MD)
+        # ── Tab 2: Evaluation ───────────────────────────────────────────────
+        with gr.Tab("📊 Evaluation"):
+            score_plot = gr.Plot(label="Score history")
+            gr.Markdown(
+                "The chart shows eval history from `state.json`. "
+                "Run a new evaluation below to add a data point.\n\n"
+                "**Automated checks (40%)**: 20 regex assertions. "
+                "**LLM judging (60%)**: 7 dimensions scored 1–5 by claude-sonnet-4-6."
+            )
 
-            # On load: render chart
-            demo.load(fn=make_score_chart, inputs=[], outputs=[score_plot])
+            with gr.Row():
+                eval_btn = gr.Button("▶  Run Evaluation", variant="primary", size="lg")
+                gr.Markdown(
+                    "*Fetches latest v2/v1/general briefs from GitHub, runs 20 checks + "
+                    "LLM judging in one API call (~45 seconds), commits report.*",
+                    container=False,
+                )
 
+            with gr.Row():
+                with gr.Column(scale=1):
+                    eval_log = gr.Textbox(
+                        label="Eval log", lines=12, max_lines=20,
+                        interactive=False, show_copy_button=True,
+                    )
+                with gr.Column(scale=2):
+                    with gr.Row():
+                        eval_dropdown = gr.Dropdown(
+                            label="Past eval reports", choices=[],
+                            interactive=True, scale=5,
+                        )
+                        refresh_eval_btn = gr.Button("🔄", scale=0)
+                    eval_out = gr.Markdown(value="*Run an evaluation or select a past report.*")
+
+            # Wiring: eval
+            eval_btn.click(fn=run_eval, outputs=[eval_log, eval_out]).then(
+                fn=refresh_eval_dropdown, outputs=[eval_dropdown],
+            ).then(
+                fn=make_score_chart, outputs=[score_plot],
+            )
+            refresh_eval_btn.click(fn=refresh_eval_dropdown, outputs=[eval_dropdown])
+            eval_dropdown.change(fn=load_eval, inputs=[eval_dropdown], outputs=[eval_out])
+
+            # On load: populate eval dropdown + chart
+            demo.load(fn=refresh_eval_dropdown, outputs=[eval_dropdown])
+            demo.load(fn=make_score_chart, outputs=[score_plot])
 
 if __name__ == "__main__":
     demo.launch()
