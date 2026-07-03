@@ -505,6 +505,7 @@ def make_score_chart():
     ax.set_facecolor("#0f1117")
 
     if history:
+        history = sorted(history, key=lambda e: e.get("eval_date", ""))
         dates  = [e.get("eval_date", "?")[:10] for e in history]
         v2_sc  = [e.get("scores", {}).get("v2",  {}).get("final_score", None) for e in history]
         v1_sc  = [e.get("scores", {}).get("v1",  {}).get("final_score", None) for e in history]
