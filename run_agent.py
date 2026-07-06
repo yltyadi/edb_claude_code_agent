@@ -26,7 +26,7 @@ CLAUDE_MD_PATH = ROOT / "CLAUDE.md"
 OUTPUTS_DIR = ROOT / "outputs"
 
 OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
-MODEL = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-5")
+MODEL = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-6")
 
 # All tool commands to run in sequence
 TOOL_COMMANDS = [
@@ -183,6 +183,8 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
         },
     )
 
+    prompt_chars = len(system_prompt) + len(user_prompt)
+    log(f"Prompt size: {prompt_chars:,} chars (~{prompt_chars//4:,} tokens est)")
     log(f"Calling LLM ({MODEL}) — this takes ~60–120 seconds...")
     response = client.chat.completions.create(
         model=MODEL,
@@ -193,7 +195,15 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
         max_tokens=16384,
         temperature=0.1,
     )
-    return response.choices[0].message.content
+    choice = response.choices[0]
+    finish_reason = choice.finish_reason
+    content = choice.message.content or ""
+    log(f"LLM response: finish_reason={finish_reason}, chars={len(content)}")
+    if finish_reason == "length":
+        log("WARNING: response was cut off at max_tokens — brief will be incomplete")
+    if not content.strip():
+        raise ValueError(f"LLM returned empty content (finish_reason={finish_reason})")
+    return content
 
 
 def save_brief(content: str, agent_version: str) -> Path:
