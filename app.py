@@ -51,7 +51,7 @@ _GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 _GITHUB_REPO  = os.environ.get("GITHUB_REPO", "")
 _OR_KEY       = os.environ.get("OPENROUTER_API_KEY", "")
 MODEL         = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-6")
-CHAT_MODEL    = os.environ.get("OPENROUTER_CHAT_MODEL", "anthropic/claude-haiku-4-5-20251001")
+CHAT_MODEL    = os.environ.get("OPENROUTER_CHAT_MODEL", "anthropic/claude-haiku-4-5")
 
 # Load rubric (available in repo at eval/rubric.py)
 try:
