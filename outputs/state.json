@@ -4,8 +4,8 @@
   "last_updated": "2026-07-06",
   "last_run": {
     "date": "2026-07-06",
-    "timestamp": "2026-07-06T11:46:35.638645",
-    "brief_path": "outputs/brief_v2_2026-07-06_1146.md",
+    "timestamp": "2026-07-06T12:09:24.429389",
+    "brief_path": "outputs/brief_v2_2026-07-06_1209.md",
     "agent_version": "v2"
   },
   "baselines": {
@@ -43,7 +43,7 @@
     "brent_direction": "up",
     "brent_direction_sessions": 2,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 205,
+    "eibor_unchanged_days": 206,
     "cbuae_rate_unchanged_days": 200
   },
   "signals_fired_last_run": [
