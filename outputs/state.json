@@ -660,5 +660,88 @@
       "score": 3,
       "patch": "Always run all four required calculations (EIBOR sensitivity, oil fiscal USD+AED, petrochemical pass-through, Op300bn run-rate) in every brief including same-day refreshes. Corrected Op300bn method: (200-133)/(300-133)=40.1% of gap, not 200/300=66.7%."
     }
+  ],
+  "autorubric_eval_history": [
+    {
+      "eval_date": "2026-07-08",
+      "framework": "autorubric",
+      "report_path": "outputs/eval_autorubric_2026-07-08.md",
+      "judges": [
+        "openrouter/anthropic/claude-haiku-4-5"
+      ],
+      "ensemble": false,
+      "briefs": {
+        "v2": "brief_v2_2026-07-06_1209.md",
+        "v1": "brief_v1_2026-06-17_0700.md",
+        "general": "brief_general_2026-06-17.md"
+      },
+      "scores": {
+        "v2": {
+          "final_score": 84.6,
+          "llm_norm": 0.81,
+          "structural_passed": 18,
+          "mean_agreement": 1.0,
+          "dims": {
+            "mandate_relevance": 4,
+            "data_grounding": 4,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 5,
+            "action_specificity": 5,
+            "data_integrity": 5,
+            "trend_continuity": 5
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": true,
+            "unsupported_number": false
+          }
+        },
+        "v1": {
+          "final_score": 75.0,
+          "llm_norm": 0.65,
+          "structural_passed": 18,
+          "mean_agreement": 1.0,
+          "dims": {
+            "mandate_relevance": 5,
+            "data_grounding": 5,
+            "quantitative_accuracy": 4,
+            "structure_completeness": 5,
+            "action_specificity": 5,
+            "data_integrity": 5,
+            "trend_continuity": 2
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": true,
+            "unsupported_number": true
+          }
+        },
+        "general": {
+          "final_score": 21.4,
+          "llm_norm": 0.19,
+          "structural_passed": 5,
+          "mean_agreement": 1.0,
+          "dims": {
+            "mandate_relevance": 2,
+            "data_grounding": 3,
+            "quantitative_accuracy": 1,
+            "structure_completeness": 2,
+            "action_specificity": 1,
+            "data_integrity": 2,
+            "trend_continuity": 1
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": false
+          }
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": 9.6,
+        "v2_vs_gen": 63.2,
+        "v1_vs_gen": 53.6
+      }
+    }
   ]
 }

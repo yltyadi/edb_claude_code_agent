@@ -12,6 +12,7 @@ Required HF Space secrets:
   GITHUB_REPO         — e.g. "yltyadi/edb-macro-agent-v2" (required)
 """
 
+import asyncio
 import base64
 import json
 import os
@@ -488,6 +489,154 @@ def load_eval(name: str) -> str:
     content, _ = gh_get(f"outputs/{name}")
     return content or f"*(Could not load `{name}`.)*"
 
+# ── Tab 3 — AutoRubric evaluation (analytic, atomic per-criterion) ─────────────
+
+def list_autorubric_evals():
+    return _list_outputs(r"eval_autorubric_\d{4}-\d{2}-\d{2}.*\.md")
+
+def refresh_autorubric_dropdown():
+    evals = list_autorubric_evals()
+    return gr.Dropdown(choices=evals, value=evals[0] if evals else None)
+
+def load_autorubric_eval(name: str) -> str:
+    if not name:
+        return ""
+    content, _ = gh_get(f"outputs/{name}")
+    return content or f"*(Could not load `{name}`.)*"
+
+def run_autorubric_eval():
+    """Fetch latest briefs, grade with the AutoRubric engine, commit report + state."""
+    if not _GITHUB_TOKEN or not _GITHUB_REPO:
+        yield "❌ GITHUB_TOKEN or GITHUB_REPO not set.", ""
+        return
+    if not _OR_KEY:
+        yield "❌ OPENROUTER_API_KEY not set — needed for LLM judging.", ""
+        return
+    try:
+        from eval_autorubric.runner import grade_all
+        from eval_autorubric.report import format_report
+        from eval_autorubric.config import judge_models
+    except Exception as e:
+        yield f"❌ AutoRubric engine import failed: {e}", ""
+        return
+
+    log = "🔍 Fetching latest briefs from GitHub…\n"
+    yield log, ""
+
+    all_files = _list_outputs(r"brief_.*\.md")
+    names = {
+        "v2":      next((f for f in all_files if re.match(r"brief_v2_", f)), None),
+        "v1":      next((f for f in all_files if re.match(r"brief_v1_", f)), None),
+        "general": next((f for f in all_files if re.match(r"brief_general_", f)), None),
+    }
+    for t, n in names.items():
+        log += f"  {t:<8}: {n or '(not found)'}\n"
+    yield log, ""
+
+    if not names["v2"]:
+        yield log + "❌ No v2 brief found. Generate a brief first.", ""
+        return
+
+    briefs = {t: (gh_get(f"outputs/{n}")[0] if n else None) for t, n in names.items()}
+    disp_names = {t: (n or "(none)") for t, n in names.items()}
+
+    judges = judge_models()
+    ensemble = len(judges) >= 2
+    log += (f"\n🤖 Grading atomically with {'ensemble of ' + str(len(judges)) if ensemble else 'single judge'} "
+            f"({', '.join(j.split('/')[-1] for j in judges)})…\n"
+            f"   One LLM call per criterion per brief — ~1–2 min.\n")
+    yield log, ""
+
+    try:
+        graded = asyncio.run(grade_all(briefs, judges))
+    except Exception as e:
+        yield log + f"\n❌ Grading failed: {e}", ""
+        return
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    report = format_report(graded, date_str, disp_names)
+
+    scores = {t: round(r["final_score"], 1) for t, r in graded["results"].items()}
+    log += f"✅ Scored: {scores}\n\n📤 Committing report + state to GitHub…\n"
+    yield log, ""
+
+    report_name = f"eval_autorubric_{date_str}.md"
+    _, existing_sha = gh_get(f"outputs/{report_name}")
+    ok = gh_put(f"outputs/{report_name}", report, existing_sha,
+                f"eval-autorubric: {date_str} [HF Spaces]")
+
+    # append to state.json → autorubric_eval_history (separate from legacy history)
+    try:
+        state_raw, s_sha = gh_get("outputs/state.json")
+        state = json.loads(state_raw) if state_raw else {}
+        record = {
+            "eval_date": date_str, "framework": "autorubric",
+            "report_path": f"outputs/{report_name}", "judges": judges,
+            "ensemble": ensemble, "briefs": disp_names,
+            "scores": {t: {"final_score": round(r["final_score"], 1),
+                           "llm_norm": round(r["llm_norm"], 3),
+                           "structural_passed": r["structural_passed"],
+                           "mean_agreement": r["mean_agreement"],
+                           "dims": r["dims"], "penalties": r["penalties"]}
+                       for t, r in graded["results"].items()},
+            "deltas": {k: round(v, 1) for k, v in graded["deltas"].items()},
+        }
+        state.setdefault("autorubric_eval_history", []).append(record)
+        gh_put("outputs/state.json", json.dumps(state, indent=2, default=str), s_sha,
+               f"state (autorubric eval): {date_str} [HF Spaces]")
+    except Exception as e:
+        log += f"⚠️ state.json update skipped: {e}\n"
+
+    log += f"✅ Committed `{report_name}`.\n" if ok else "⚠️ Report commit failed.\n"
+    yield log, report
+
+def make_autorubric_chart():
+    """Score history chart from state.json autorubric_eval_history."""
+    try:
+        state_raw, _ = gh_get("outputs/state.json")
+        history = json.loads(state_raw).get("autorubric_eval_history", []) if state_raw else []
+    except Exception:
+        history = []
+
+    fig, ax = plt.subplots(figsize=(9, 4))
+    fig.patch.set_facecolor("#0f1117")
+    ax.set_facecolor("#0f1117")
+
+    if history:
+        history = sorted(history, key=lambda e: e.get("eval_date", ""))
+        dates = [e.get("eval_date", "?")[:10] for e in history]
+
+        def series(t):
+            return [e.get("scores", {}).get(t, {}).get("final_score") for e in history]
+
+        for t, color, label in (("v2", "#d4a843", "v2 Agent"),
+                                 ("v1", "#8899cc", "v1 Agent"),
+                                 ("general", "#667788", "General")):
+            pts = [(d, s) for d, s in zip(dates, series(t)) if s is not None]
+            if pts:
+                xs, ys = zip(*pts)
+                ax.plot(xs, ys, "o-", color=color, label=label, linewidth=2, markersize=5)
+        ax.set_ylim(0, 105)
+        if len(dates) > 5:
+            ax.set_xticks(ax.get_xticks()[::2])
+        plt.xticks(rotation=30, ha="right", color="#cccccc", fontsize=8)
+        ax.legend(facecolor="#1a1a2e", edgecolor="#333344", labelcolor="#cccccc", fontsize=9)
+    else:
+        ax.text(0.5, 0.5, "No AutoRubric evals yet.\nRun one below.",
+                ha="center", va="center", color="#888888", fontsize=12,
+                transform=ax.transAxes)
+
+    ax.set_ylabel("Score / 100", color="#888888", fontsize=9)
+    ax.set_title("AutoRubric Score History", color="white", fontsize=13, pad=10)
+    ax.tick_params(axis="y", colors="#666666")
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    for sp in ("bottom", "left"):
+        ax.spines[sp].set_color("#333344")
+    ax.grid(axis="y", color="#222233", linewidth=0.5, zorder=0)
+    fig.tight_layout(pad=1.5)
+    return fig
+
 def make_score_chart():
     """Score history chart from state.json eval_history."""
     try:
@@ -635,8 +784,8 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
             # On load: populate dropdown
             demo.load(fn=refresh_brief_dropdown, outputs=[brief_dropdown], api_name=False)
 
-        # ── Tab 2: Evaluation ───────────────────────────────────────────────
-        with gr.Tab("📊 Evaluation"):
+        # ── Tab 2: Evaluation (legacy framework) ────────────────────────────
+        with gr.Tab("📊 Evaluation (Legacy)"):
             score_plot = gr.Plot(label="Score history")
             gr.Markdown(
                 "The chart shows eval history from `state.json`. "
@@ -679,6 +828,53 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
             # On load: populate eval dropdown + chart
             demo.load(fn=refresh_eval_dropdown, outputs=[eval_dropdown], api_name=False)
             demo.load(fn=make_score_chart, outputs=[score_plot], api_name=False)
+
+        # ── Tab 3: AutoRubric Evaluation ────────────────────────────────────
+        with gr.Tab("🧪 AutoRubric Eval"):
+            ar_plot = gr.Plot(label="AutoRubric score history")
+            gr.Markdown(
+                "**AutoRubric framework** (Rao & Callison-Burch, autorubric.org) — "
+                "analytic rubric, each criterion judged in its *own* LLM call to remove "
+                "the halo/conflation effect of the legacy one-call judge.\n\n"
+                "Same 40% structural layer as the legacy tab; the 60% LLM layer is the "
+                "AutoRubric normalized score over 7 ordinal dimensions **+ 3 negative "
+                "penalties** (anti-patterns). Set the `AUTORUBRIC_JUDGES` secret to 2+ "
+                "cross-family models to enable ensemble judging + inter-judge reliability."
+            )
+
+            with gr.Row():
+                ar_btn = gr.Button("▶  Run AutoRubric Eval", variant="primary", size="lg")
+                gr.Markdown(
+                    "*Fetches latest v2/v1/general briefs, grades each criterion "
+                    "atomically (~1–2 min), commits report + state.*"
+                )
+
+            with gr.Row():
+                with gr.Column(scale=1):
+                    ar_log = gr.Textbox(
+                        label="AutoRubric log", lines=12, max_lines=20,
+                        interactive=False, show_copy_button=True,
+                    )
+                with gr.Column(scale=2):
+                    with gr.Row():
+                        ar_dropdown = gr.Dropdown(
+                            label="Past AutoRubric reports", choices=[],
+                            interactive=True, scale=5,
+                        )
+                        ar_refresh_btn = gr.Button("🔄", scale=0)
+                    ar_out = gr.Markdown(value="*Run an AutoRubric eval or select a past report.*")
+
+            # Wiring: autorubric eval
+            ar_btn.click(fn=run_autorubric_eval, outputs=[ar_log, ar_out], api_name=False).then(
+                fn=refresh_autorubric_dropdown, outputs=[ar_dropdown], api_name=False,
+            ).then(
+                fn=make_autorubric_chart, outputs=[ar_plot], api_name=False,
+            )
+            ar_refresh_btn.click(fn=refresh_autorubric_dropdown, outputs=[ar_dropdown], api_name=False)
+            ar_dropdown.change(fn=load_autorubric_eval, inputs=[ar_dropdown], outputs=[ar_out], api_name=False)
+
+            demo.load(fn=refresh_autorubric_dropdown, outputs=[ar_dropdown], api_name=False)
+            demo.load(fn=make_autorubric_chart, outputs=[ar_plot], api_name=False)
 
 if __name__ == "__main__":
     demo.launch()
