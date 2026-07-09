@@ -98,10 +98,11 @@ async def main() -> None:
         "ensemble": graded["ensemble"],
         "briefs": names,
         "scores": {t: {"final_score": round(r["final_score"], 1),
-                       "llm_norm": round(r["llm_norm"], 3),
-                       "structural_passed": r["structural_passed"],
+                       "llm_score": round(r["llm_score"], 3),
                        "mean_agreement": r["mean_agreement"],
-                       "dims": r["dims"], "penalties": r["penalties"]}
+                       "binary": r["binary"],
+                       "dims": r["dims"],
+                       "penalties": r["penalties"]}
                    for t, r in results.items()},
         "deltas": {k: round(v, 1) for k, v in graded["deltas"].items()},
     }
@@ -110,8 +111,9 @@ async def main() -> None:
 
     print(f"\nReport written: {report_path.relative_to(ROOT)}", flush=True)
     for t, r in results.items():
-        print(f"  {t:<8}: {r['final_score']:.1f}/100  (llm {r['llm_norm']:.3f}, "
-              f"struct {r['structural_passed']}/{r['structural_total']})", flush=True)
+        binary_pass = sum(1 for v in r["binary"].values() if v)
+        print(f"  {t:<8}: {r['final_score']:.1f}/100  "
+              f"(llm {r['llm_score']:.3f}, binary {binary_pass}/{len(r['binary'])})", flush=True)
     # machine-readable summary line for the skill to parse
     print("SUMMARY_JSON=" + json.dumps({
         "report_path": str(report_path.relative_to(ROOT)),

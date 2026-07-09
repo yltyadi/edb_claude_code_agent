@@ -1,84 +1,107 @@
 # AutoRubric Evaluation Framework (EDB briefs)
 
 A second, independent evaluation framework for the EDB macro briefs, built on
-[AutoRubric](https://autorubric.org) (Rao & Callison-Burch). It runs **side by
-side** with the legacy `eval/` framework — nothing in `eval/` is modified — so the
-two can be compared directly.
+[AutoRubric](https://autorubric.org) (Rao & Callison-Burch, UPenn/DARPA). It runs
+**side by side** with the legacy `eval/` framework — nothing in `eval/` is touched —
+so the two can be compared directly in a presentation.
 
 ## Why a second framework
 
-The legacy evaluator scores all 7 quality dimensions for all 3 briefs in **one
-LLM call**. That invites the *halo effect / criterion conflation* the AutoRubric
-paper is built against: a polished-looking brief gets uniformly high marks. This
-framework judges **each criterion in its own LLM call** (atomic decomposition),
-adds **negative penalty criteria** for anti-patterns, and supports **ensemble
-judging with inter-judge reliability** (Cohen's κ / agreement).
+The legacy evaluator scores all 7 quality dimensions in **one LLM call**. That invites
+the *halo effect / criterion conflation* the AutoRubric paper is built against: a
+polished-looking brief gets uniformly high marks because quality impressions bleed across
+dimensions. This framework judges **each criterion in its own LLM call** (atomic
+decomposition), adds **negative penalty criteria** for anti-patterns, and uses a
+**2-model cross-family ensemble** for inter-judge reliability.
+
+## Paper API used (Listings 1–4)
+
+```python
+# Listing 2: ordinal criterion with plain-dict options
+from autorubric import Rubric, Criterion
+
+rubric = Rubric([
+    Criterion(
+        weight=10.0,
+        requirement="Rate the clarity of explanation",
+        scale_type="ordinal",
+        options=[
+            {"label": "Absent",    "value": 0.00},
+            {"label": "Weak",      "value": 0.25},
+            {"label": "Adequate",  "value": 0.50},
+            {"label": "Strong",    "value": 0.75},
+            {"label": "Exemplary", "value": 1.00},
+        ],
+    ),
+    # Listing 3: negative binary criterion (penalty when anti-pattern is MET)
+    Criterion(weight=-0.15, requirement="Contains unsupported quantitative claims"),
+])
+
+# Listing 4: 2-model cross-family ensemble
+from autorubric import LLMConfig
+from autorubric.graders import CriterionGrader, JudgeSpec
+
+grader = CriterionGrader(
+    judges=[
+        JudgeSpec(LLMConfig(model="openrouter/anthropic/claude-haiku-4-5"), "haiku",   weight=1.0),
+        JudgeSpec(LLMConfig(model="openrouter/google/gemini-2.5-flash"),    "gemini",  weight=1.0),
+    ],
+    aggregation="majority",
+)
+result = await rubric.grade(to_grade=brief_text, grader=grader, query=mandate_context)
+print(f"Score: {result.score:.2f}, Agreement: {result.mean_agreement:.1%}")
+```
 
 ## What it scores
 
-Same aggregation as legacy so final scores are comparable (`0–100`):
+Same 0–100 aggregation as the legacy framework for fair comparison:
 
-- **40% structural** — the same 20 deterministic regex checks (`structural.py`,
-  reusing `eval/rubric.py`). Format compliance is a job for regex, not an LLM.
-- **60% LLM** — AutoRubric normalized weighted score over:
-  - **7 ordinal dimensions** (1–5, behavioural anchors, imported verbatim from
-    `eval/rubric.py` so both frameworks judge the same constructs). Ordinal
-    options use *descriptive* labels (`exemplary`…`absent`), never `"1"–"5"`,
-    to avoid colliding with the judge's shuffled option positions.
-  - **3 negative penalties** (`generic_market_commentary`,
-    `silent_stale_or_estimated_data`, `unsupported_number`) — anti-patterns the
-    legacy rubric could not express. Negative weights counter LLM leniency bias.
-
-`trend_continuity` is capped at 2 for stateless (v1 / general) briefs, matching
-the legacy domain rule.
+- **40% structural** — 20 deterministic regex checks (reusing `eval/rubric.py`)
+- **60% LLM** — `result.score` from AutoRubric (normalized weighted score) over:
+  - **7 ordinal dimensions** (5-level, behavioural anchors, same constructs as legacy)
+  - **3 negative penalty criteria** (binary, fire when anti-pattern is present)
 
 ## Files
 
 | File | Role |
 |------|------|
-| `config.py`      | judges (env `AUTORUBRIC_JUDGES`), weights, mandate query |
-| `rubric_def.py`  | builds the AutoRubric `Rubric` (7 ordinal + 3 penalties) |
-| `structural.py`  | the shared 20-check deterministic layer |
-| `runner.py`      | core async engine: grade one/many briefs, reliability, scoring |
-| `report.py`      | renders the markdown 3-way comparison report |
-| `run_eval.py`    | CLI entrypoint (used by the skill) + `state.json` persistence |
-| `spike.py`       | Phase 0 proof-of-concept (toy rubric) |
-| `compare.py`     | controlled OLD-vs-NEW head-to-head on one brief |
+| `config.py`      | 2-model ensemble default, weights, mandate query |
+| `rubric_def.py`  | `Rubric([Criterion(...)])` — paper Listing 2–3 |
+| `structural.py`  | shared 20-check deterministic layer |
+| `runner.py`      | `result.score` + `result.mean_agreement` — paper Listing 4 |
+| `report.py`      | 3-way comparison markdown report |
+| `run_eval.py`    | CLI entrypoint + `state.json → autorubric_eval_history` |
+| `compare.py`     | OLD (conflated) vs NEW (atomic) head-to-head on one brief |
+| `spike.py`       | Phase 0 proof-of-concept |
 
 ## Running it
 
-### As a Claude Code skill
+### Claude Code skill
 ```
 /eval-brief-autorubric
 ```
-Runs `run_eval.py`, interprets the report, and patches `CLAUDE.md` for any v2
-dimension ≤ 3 or fired penalty (AutoRubric §5 "skill improvement" loop).
 
-### From the CLI
+### CLI
 ```bash
-venv/bin/python -m eval_autorubric.run_eval            # single judge
-venv/bin/python -m eval_autorubric.compare             # OLD vs NEW on one brief
+venv/bin/python -m eval_autorubric.run_eval          # default 2-model ensemble
+venv/bin/python -m eval_autorubric.compare           # OLD vs NEW head-to-head
 ```
 
-### On the deployed HF Space
-Tab **🧪 AutoRubric Eval** — one button; fetches the latest briefs, grades,
-commits `outputs/eval_autorubric_<date>.md`, and appends to
-`state.json → autorubric_eval_history`.
+### HF Space
+Tab **🧪 AutoRubric Eval** — fetches latest briefs, grades with 2-model ensemble,
+commits `outputs/eval_autorubric_<date>.md`, appends to `state.json → autorubric_eval_history`.
 
-## Ensemble + reliability (recommended for presentations)
-
-A single judge gives no reliability signal. Set 2+ **cross-family** judges to
-enable inter-judge agreement (and to fix self-preference — a non-Anthropic judge
-grading the Anthropic-written v2):
+## Overriding judges
 
 ```bash
-export AUTORUBRIC_JUDGES="openrouter/anthropic/claude-haiku-4-5,openrouter/google/gemini-2.5-flash"
+# 3-judge cross-family ensemble
+export AUTORUBRIC_JUDGES="openrouter/anthropic/claude-haiku-4-5,openrouter/google/gemini-2.5-flash,openrouter/openai/gpt-4.1-mini"
 ```
 
-On HF, set `AUTORUBRIC_JUDGES` as a Space secret. Requires `OPENROUTER_API_KEY`.
+On HF Space, set `AUTORUBRIC_JUDGES` as a Space secret. Requires `OPENROUTER_API_KEY`.
 
 ## State separation
 
 Results go to `state.json → autorubric_eval_history`, kept entirely separate from
 the legacy `eval_history`, so both frameworks accumulate independent longitudinal
-records for comparison.
+records.

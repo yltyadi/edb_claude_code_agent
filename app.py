@@ -25,6 +25,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import requests
 
 # ── HuggingFace Hub compat patch ─────────────────────────────────────────────
@@ -574,10 +575,11 @@ def run_autorubric_eval():
             "report_path": f"outputs/{report_name}", "judges": judges,
             "ensemble": ensemble, "briefs": disp_names,
             "scores": {t: {"final_score": round(r["final_score"], 1),
-                           "llm_norm": round(r["llm_norm"], 3),
-                           "structural_passed": r["structural_passed"],
+                           "llm_score": round(r["llm_score"], 3),
                            "mean_agreement": r["mean_agreement"],
-                           "dims": r["dims"], "penalties": r["penalties"]}
+                           "binary": r["binary"],
+                           "dims": r["dims"],
+                           "penalties": r["penalties"]}
                        for t, r in graded["results"].items()},
             "deltas": {k: round(v, 1) for k, v in graded["deltas"].items()},
         }
@@ -590,119 +592,294 @@ def run_autorubric_eval():
     log += f"✅ Committed `{report_name}`.\n" if ok else "⚠️ Report commit failed.\n"
     yield log, report
 
-def make_autorubric_chart():
-    """Score history chart from state.json autorubric_eval_history."""
+def _latest_autorubric_eval():
+    """Return the most recent autorubric_eval_history entry, or None."""
     try:
         state_raw, _ = gh_get("outputs/state.json")
-        history = json.loads(state_raw).get("autorubric_eval_history", []) if state_raw else []
+        if not state_raw:
+            return None
+        history = json.loads(state_raw).get("autorubric_eval_history", [])
+        if not history:
+            return None
+        return sorted(history, key=lambda e: e.get("eval_date", ""))[-1]
     except Exception:
-        history = []
+        return None
 
-    fig, ax = plt.subplots(figsize=(9, 4))
-    fig.patch.set_facecolor("#0f1117")
-    ax.set_facecolor("#0f1117")
 
-    if history:
-        history = sorted(history, key=lambda e: e.get("eval_date", ""))
-        dates = [e.get("eval_date", "?")[:10] for e in history]
+def make_autorubric_comparison_chart():
+    """Cross-agent comparison: final scores + per-dimension breakdown from latest eval."""
+    fig_bg = "#0f1117"
+    ax_bg  = "#0d0d1a"
 
-        def series(t):
-            return [e.get("scores", {}).get(t, {}).get("final_score") for e in history]
+    latest = _latest_autorubric_eval()
 
-        for t, color, label in (("v2", "#d4a843", "v2 Agent"),
-                                 ("v1", "#8899cc", "v1 Agent"),
-                                 ("general", "#667788", "General")):
-            pts = [(d, s) for d, s in zip(dates, series(t)) if s is not None]
-            if pts:
-                xs, ys = zip(*pts)
-                ax.plot(xs, ys, "o-", color=color, label=label, linewidth=2, markersize=5)
-        ax.set_ylim(0, 105)
-        if len(dates) > 5:
-            ax.set_xticks(ax.get_xticks()[::2])
-        plt.xticks(rotation=30, ha="right", color="#cccccc", fontsize=8)
-        ax.legend(facecolor="#1a1a2e", edgecolor="#333344", labelcolor="#cccccc", fontsize=9)
-    else:
-        ax.text(0.5, 0.5, "No AutoRubric evals yet.\nRun one below.",
+    if latest is None:
+        fig, ax = plt.subplots(figsize=(10, 4), facecolor=fig_bg)
+        ax.set_facecolor(ax_bg)
+        ax.text(0.5, 0.5, "No AutoRubric evals yet.\nRun one below to compare agents.",
                 ha="center", va="center", color="#888888", fontsize=12,
                 transform=ax.transAxes)
+        ax.axis("off")
+        fig.tight_layout()
+        return fig
 
-    ax.set_ylabel("Score / 100", color="#888888", fontsize=9)
-    ax.set_title("AutoRubric Score History", color="white", fontsize=13, pad=10)
-    ax.tick_params(axis="y", colors="#666666")
-    for sp in ("top", "right"):
-        ax.spines[sp].set_visible(False)
-    for sp in ("bottom", "left"):
-        ax.spines[sp].set_color("#333344")
-    ax.grid(axis="y", color="#222233", linewidth=0.5, zorder=0)
-    fig.tight_layout(pad=1.5)
+    scores = latest.get("scores", {})
+    deltas = latest.get("deltas", {})
+    agents = ["v2", "v1", "general"]
+    labels = {"v2": "v2 Custom Agent", "v1": "v1 Custom Agent", "general": "General LLM"}
+    colors = {"v2": "#4fc3f7", "v1": "#ffb74d", "general": "#ef5350"}
+
+    dim_ids   = [d["id"] for d in LLM_DIMENSIONS]
+    dim_short = [
+        d["name"].replace("& Source Citation", "").replace("& Calculation Discipline", "")
+                 .replace("& Gap Disclosure", "").replace("& Continuity", "").strip()
+        for d in LLM_DIMENSIONS
+    ]
+
+    fig, (ax1, ax2) = plt.subplots(
+        1, 2, figsize=(14, 5.5),
+        gridspec_kw={"width_ratios": [2, 3]},
+        facecolor=fig_bg,
+    )
+
+    # ── Left panel: final score horizontal bars ──────────────────────────────
+    ax1.set_facecolor(ax_bg)
+    rev_agents = list(reversed(agents))
+    final_vals = [scores.get(a, {}).get("final_score") or 0 for a in rev_agents]
+    bars = ax1.barh(
+        [labels[a] for a in rev_agents], final_vals,
+        color=[colors[a] for a in rev_agents], height=0.45, zorder=3,
+    )
+    for bar, a, val in zip(bars, rev_agents, final_vals):
+        ax1.text(min(val + 1.5, 107), bar.get_y() + bar.get_height() / 2,
+                 f"{val:.1f}/100", va="center", color="white",
+                 fontsize=11, fontweight="bold")
+    ax1.set_xlim(0, 115)
+    ax1.set_xlabel("Score / 100", color="#aaaaaa", fontsize=9)
+    ax1.set_title("Overall Score", color="white", fontsize=12, pad=8)
+    ax1.tick_params(colors="#cccccc", labelsize=9)
+    ax1.spines[:].set_color("#333344")
+    ax1.grid(axis="x", color="#222233", linewidth=0.5, zorder=0)
+    if "v2_vs_gen" in deltas:
+        ax1.text(0.98, 0.04,
+                 f"v2 leads General by +{deltas['v2_vs_gen']:.0f} pts",
+                 transform=ax1.transAxes, ha="right", va="bottom",
+                 color="#4fc3f7", fontsize=8, style="italic")
+
+    # ── Right panel: per-dimension grouped bars ──────────────────────────────
+    ax2.set_facecolor(ax_bg)
+    x     = np.arange(len(dim_ids))
+    width = 0.25
+    for i, a in enumerate(agents):
+        dim_vals = [scores.get(a, {}).get("dims", {}).get(did) or 0 for did in dim_ids]
+        ax2.bar(x + i * width, dim_vals, width,
+                label=labels[a], color=colors[a], alpha=0.85, zorder=3)
+    ax2.set_xticks(x + width)
+    ax2.set_xticklabels(dim_short, rotation=28, ha="right",
+                        color="#cccccc", fontsize=8)
+    ax2.set_ylim(0, 5.8)
+    ax2.set_ylabel("Score (1–5)", color="#aaaaaa", fontsize=9)
+    ax2.set_title("Per-Dimension Breakdown", color="white", fontsize=12, pad=8)
+    ax2.tick_params(colors="#cccccc", labelsize=8)
+    ax2.spines[:].set_color("#333344")
+    ax2.grid(axis="y", color="#222233", linewidth=0.5, zorder=0)
+    ax2.axhline(y=3, color="#555566", linestyle="--", alpha=0.6, linewidth=0.8)
+    ax2.legend(facecolor="#1a1a2e", edgecolor="#333344",
+               labelcolor="#cccccc", fontsize=8, loc="upper right")
+
+    eval_date = latest.get("eval_date", "")
+    judge_str = ", ".join(j.split("/")[-1] for j in latest.get("judges", []))
+    fig.suptitle(
+        f"EDB Agent Comparison — AutoRubric  ({eval_date}  ·  judges: {judge_str})",
+        color="white", fontsize=10, y=1.01,
+    )
+    plt.tight_layout(pad=1.5)
     return fig
 
-def make_score_chart():
-    """Score history chart from state.json eval_history."""
+
+def make_autorubric_summary_md():
+    """Score card + 'why custom agent?' narrative from the latest eval."""
+    latest = _latest_autorubric_eval()
+    if latest is None:
+        return "_No eval yet — run one below._"
+
+    scores = latest.get("scores", {})
+    deltas = latest.get("deltas", {})
+    date   = latest.get("eval_date", "unknown")
+    judges = latest.get("judges", [])
+    judge_str = " + ".join(j.split("/")[-1] for j in judges)
+
+    def fs(t): return scores.get(t, {}).get("final_score", "—")
+    def bp(t):
+        b = scores.get(t, {}).get("binary", {})
+        passed = sum(1 for v in b.values() if v)
+        return f"{passed}/{len(b)}" if b else "—"
+
+    gap = deltas.get("v2_vs_gen")
+    gap_line = (
+        f"The custom v2 agent outperforms a general-purpose LLM by **+{gap:.0f} points** "
+        f"on EDB's specialised rubric."
+        if gap is not None else ""
+    )
+
+    return (
+        f"**Latest evaluation — {date}** ·  judges: {judge_str}\n\n"
+        f"| Agent | Final score | Structural checks | Why it matters |\n"
+        f"|---|:---:|:---:|---|\n"
+        f"| 🥇 **v2 Custom Agent** | **{fs('v2')}/100** | {bp('v2')} | Full pipeline: live data tools, state.json streaks, EIBOR chain, sector matrix |\n"
+        f"| 🥈 v1 Custom Agent | {fs('v1')}/100 | {bp('v1')} | Custom prompting + sector mapping, no cross-session memory |\n"
+        f"| ❌ General LLM | {fs('general')}/100 | {bp('general')} | Off-the-shelf assistant with no EDB context, tools, or calculation templates |\n\n"
+        f"{gap_line}\n\n"
+        f"> **Why does an analyst need this custom agent?** A standard LLM assistant cannot: "
+        f"(1) fetch live macro data via FRED/CBUAE/OPEC APIs, "
+        f"(2) trace the AED/USD peg chain through to EIBOR and EDB's SME loan portfolio, "
+        f"(3) maintain cross-session baselines for trend language (\"unchanged for 187 days\"), "
+        f"(4) map every signal to EDB's five priority sectors with quantified impact. "
+        f"The score gap quantifies exactly what the custom engineering delivers."
+    )
+
+def _latest_legacy_eval():
+    """Return the most recent eval_history entry, or None."""
     try:
         state_raw, _ = gh_get("outputs/state.json")
-        if state_raw:
-            state = json.loads(state_raw)
-            history = state.get("eval_history", [])
-        else:
-            history = []
+        if not state_raw:
+            return None
+        history = json.loads(state_raw).get("eval_history", [])
+        if not history:
+            return None
+        return sorted(history, key=lambda e: e.get("eval_date", ""))[-1]
     except Exception:
-        history = []
+        return None
 
-    fig, ax = plt.subplots(figsize=(9, 4))
-    fig.patch.set_facecolor("#0f1117")
-    ax.set_facecolor("#0f1117")
 
-    if history:
-        history = sorted(history, key=lambda e: e.get("eval_date", ""))
-        dates  = [e.get("eval_date", "?")[:10] for e in history]
-        v2_sc  = [e.get("scores", {}).get("v2",  {}).get("final_score", None) for e in history]
-        v1_sc  = [e.get("scores", {}).get("v1",  {}).get("final_score", None) for e in history]
-        gen_sc = [e.get("scores", {}).get("general", {}).get("final_score", None) for e in history]
+def _comparison_chart(latest, dim_key: str, title_suffix: str):
+    """Shared chart builder for both eval tabs. dim_key is 'dims' or 'dimension_scores'."""
+    fig_bg = "#0f1117"
+    ax_bg  = "#0d0d1a"
 
-        def _plot(scores, color, label):
-            pts = [(d, s) for d, s in zip(dates, scores) if s is not None]
-            if pts:
-                xs, ys = zip(*pts)
-                ax.plot(xs, ys, "o-", color=color, label=label, linewidth=2, markersize=5)
+    if latest is None:
+        fig, ax = plt.subplots(figsize=(10, 4), facecolor=fig_bg)
+        ax.set_facecolor(ax_bg)
+        ax.text(0.5, 0.5, "No evaluations yet.\nRun one below to compare agents.",
+                ha="center", va="center", color="#888888", fontsize=12,
+                transform=ax.transAxes)
+        ax.axis("off")
+        fig.tight_layout()
+        return fig
 
-        _plot(v2_sc,  "#d4a843", "v2 Agent")
-        _plot(v1_sc,  "#8899cc", "v1 Agent")
-        _plot(gen_sc, "#667788", "General")
+    scores  = latest.get("scores", {})
+    deltas  = latest.get("deltas", {})
+    agents  = ["v2", "v1", "general"]
+    labels  = {"v2": "v2 Custom Agent", "v1": "v1 Custom Agent", "general": "General LLM"}
+    colors  = {"v2": "#4fc3f7", "v1": "#ffb74d", "general": "#ef5350"}
+    dim_ids = [d["id"] for d in LLM_DIMENSIONS]
+    dim_short = [
+        d["name"].replace("& Source Citation", "").replace("& Calculation Discipline", "")
+                 .replace("& Gap Disclosure", "").replace("& Continuity", "").strip()
+        for d in LLM_DIMENSIONS
+    ]
 
-        ax.set_ylim(0, 110)
-        if len(dates) > 5:
-            ax.set_xticks(ax.get_xticks()[::2])
-        plt.xticks(rotation=30, ha="right", color="#cccccc", fontsize=8)
-    else:
-        # Static fallback with known scores
-        labels = ["General\n(baseline)", "v1 Agent\n(structured)", "v2 Agent\n(+ memory)"]
-        auto   = [10.0, 36.0, 40.0]
-        llm    = [25.9, 46.6, 60.0]
-        totals = [35.9, 82.6, 100.0]
-        x, w = [0, 1, 2], 0.32
-        ax.bar([i - w/2 for i in x], auto, width=w, alpha=0.9, zorder=3,
-               color=["#44445a","#5566aa","#b8921e"], label="Automated (40%)")
-        ax.bar([i + w/2 for i in x], llm,  width=w, alpha=0.9, zorder=3,
-               color=["#667788","#8899cc","#d9b040"], label="LLM Dims (60%)")
-        for i, total in enumerate(totals):
-            ax.text(i, max(auto[i], llm[i]) + 3, f"{total:.1f}", ha="center", va="bottom",
-                    color="white", fontweight="bold", fontsize=12)
-        ax.set_xticks(x)
-        ax.set_xticklabels(labels, color="#cccccc", fontsize=10)
-        ax.set_ylim(0, 115)
+    fig, (ax1, ax2) = plt.subplots(
+        1, 2, figsize=(14, 5.5),
+        gridspec_kw={"width_ratios": [2, 3]},
+        facecolor=fig_bg,
+    )
 
-    ax.set_ylabel("Score / 100", color="#888888", fontsize=9)
-    ax.set_title("EDB Agent Score History", color="white", fontsize=13, pad=10)
-    ax.tick_params(axis="y", colors="#666666")
-    for sp in ("top", "right"):
-        ax.spines[sp].set_visible(False)
-    for sp in ("bottom", "left"):
-        ax.spines[sp].set_color("#333344")
-    ax.grid(axis="y", color="#222233", linewidth=0.5, zorder=0)
-    ax.legend(facecolor="#1a1a2e", edgecolor="#333344", labelcolor="#cccccc", fontsize=9)
-    fig.tight_layout(pad=1.5)
+    # ── Left: final score horizontal bars ────────────────────────────────────
+    ax1.set_facecolor(ax_bg)
+    rev = list(reversed(agents))
+    final_vals = [scores.get(a, {}).get("final_score") or 0 for a in rev]
+    bars = ax1.barh(
+        [labels[a] for a in rev], final_vals,
+        color=[colors[a] for a in rev], height=0.45, zorder=3,
+    )
+    for bar, a, val in zip(bars, rev, final_vals):
+        ax1.text(min(val + 1.5, 107), bar.get_y() + bar.get_height() / 2,
+                 f"{val:.1f}/100", va="center", color="white",
+                 fontsize=11, fontweight="bold")
+    ax1.set_xlim(0, 115)
+    ax1.set_xlabel("Score / 100", color="#aaaaaa", fontsize=9)
+    ax1.set_title("Overall Score", color="white", fontsize=12, pad=8)
+    ax1.tick_params(colors="#cccccc", labelsize=9)
+    ax1.spines[:].set_color("#333344")
+    ax1.grid(axis="x", color="#222233", linewidth=0.5, zorder=0)
+    if "v2_vs_gen" in deltas:
+        ax1.text(0.98, 0.04, f"v2 leads General by +{deltas['v2_vs_gen']:.0f} pts",
+                 transform=ax1.transAxes, ha="right", va="bottom",
+                 color="#4fc3f7", fontsize=8, style="italic")
+
+    # ── Right: per-dimension grouped bars ────────────────────────────────────
+    ax2.set_facecolor(ax_bg)
+    x = np.arange(len(dim_ids))
+    width = 0.25
+    for i, a in enumerate(agents):
+        dim_vals = [scores.get(a, {}).get(dim_key, {}).get(did) or 0 for did in dim_ids]
+        ax2.bar(x + i * width, dim_vals, width,
+                label=labels[a], color=colors[a], alpha=0.85, zorder=3)
+    ax2.set_xticks(x + width)
+    ax2.set_xticklabels(dim_short, rotation=28, ha="right", color="#cccccc", fontsize=8)
+    ax2.set_ylim(0, 5.8)
+    ax2.set_ylabel("Score (1–5)", color="#aaaaaa", fontsize=9)
+    ax2.set_title("Per-Dimension Breakdown", color="white", fontsize=12, pad=8)
+    ax2.tick_params(colors="#cccccc", labelsize=8)
+    ax2.spines[:].set_color("#333344")
+    ax2.grid(axis="y", color="#222233", linewidth=0.5, zorder=0)
+    ax2.axhline(y=3, color="#555566", linestyle="--", alpha=0.6, linewidth=0.8)
+    ax2.legend(facecolor="#1a1a2e", edgecolor="#333344",
+               labelcolor="#cccccc", fontsize=8, loc="upper right")
+
+    eval_date = latest.get("eval_date", "")
+    fig.suptitle(
+        f"EDB Agent Comparison — {title_suffix}  ({eval_date})",
+        color="white", fontsize=10, y=1.01,
+    )
+    plt.tight_layout(pad=1.5)
     return fig
+
+
+def make_score_chart():
+    """Cross-agent comparison chart — legacy framework (eval_history)."""
+    return _comparison_chart(
+        _latest_legacy_eval(),
+        dim_key="dimension_scores",
+        title_suffix="Legacy Evaluator",
+    )
+
+
+def make_legacy_summary_md():
+    """Score card for the legacy eval tab."""
+    latest = _latest_legacy_eval()
+    if latest is None:
+        return "_No eval yet — run one below._"
+
+    scores = latest.get("scores", {})
+    deltas = latest.get("deltas", {})
+    date   = latest.get("eval_date", "unknown")
+
+    def fs(t): return scores.get(t, {}).get("final_score", "—")
+    def ap(t):
+        s = scores.get(t, {})
+        p, tot = s.get("auto_passed"), s.get("auto_total")
+        return f"{p}/{tot}" if p is not None else "—"
+
+    gap = deltas.get("v2_vs_gen")
+    gap_line = (
+        f"The custom v2 agent outperforms a general-purpose LLM by **+{gap:.0f} points** "
+        f"on EDB's specialised rubric."
+        if gap is not None else ""
+    )
+
+    return (
+        f"**Latest evaluation — {date}** · legacy evaluator (20 regex checks + one-call LLM judging)\n\n"
+        f"| Agent | Final score | Regex checks | Why it matters |\n"
+        f"|---|:---:|:---:|---|\n"
+        f"| 🥇 **v2 Custom Agent** | **{fs('v2')}/100** | {ap('v2')} | Full pipeline: live data tools, state.json streaks, EIBOR chain, sector matrix |\n"
+        f"| 🥈 v1 Custom Agent | {fs('v1')}/100 | {ap('v1')} | Custom prompting + sector mapping, no cross-session memory |\n"
+        f"| ❌ General LLM | {fs('general')}/100 | {ap('general')} | Off-the-shelf assistant with no EDB context, tools, or calculation templates |\n\n"
+        f"{gap_line}\n\n"
+        f"> **Note:** The legacy evaluator judges all 7 quality dimensions in a single LLM call "
+        f"(halo effect risk). See the **AutoRubric** tab for atomic per-criterion judging."
+    )
 
 # ── Gradio UI ─────────────────────────────────────────────────────────────────
 with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as demo:
@@ -785,96 +962,114 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
             demo.load(fn=refresh_brief_dropdown, outputs=[brief_dropdown], api_name=False)
 
         # ── Tab 2: Evaluation (legacy framework) ────────────────────────────
-        with gr.Tab("📊 Evaluation (Legacy)"):
-            score_plot = gr.Plot(label="Score history")
+        with gr.Tab("📊 Agent Comparison (Legacy Eval)"):
             gr.Markdown(
-                "The chart shows eval history from `state.json`. "
-                "Run a new evaluation below to add a data point.\n\n"
-                "**Automated checks (40%)**: 20 regex assertions. "
-                "**LLM judging (60%)**: 7 dimensions scored 1–5 by claude-sonnet-4-6."
+                "## Why a custom agent? — Legacy evaluator\n\n"
+                "Same question as the AutoRubric tab, answered by the legacy framework: "
+                "**20 regex structural checks (40%) + 7 quality dimensions judged in one LLM call (60%)**. "
+                "Compare scores side by side or use the AutoRubric tab for the more rigorous "
+                "atomic per-criterion evaluation.\n\n"
+                "*Note: judging all 7 dimensions in a single call risks halo effect — "
+                "a polished brief may receive uniformly high marks. The AutoRubric tab fixes this.*"
             )
 
-            with gr.Row():
-                eval_btn = gr.Button("▶  Run Evaluation", variant="primary", size="lg")
+            score_plot   = gr.Plot(label="Agent comparison")
+            legacy_summary = gr.Markdown(value="_Loading…_")
+
+            with gr.Accordion("▶  Run a new evaluation", open=False):
                 gr.Markdown(
-                    "*Fetches latest v2/v1/general briefs from GitHub, runs 20 checks + "
-                    "LLM judging in one API call (~45 seconds), commits report.*"
+                    "Fetches the latest v2 / v1 / general briefs, runs 20 regex checks + "
+                    "one LLM call scoring all 7 dimensions. Takes ~45 seconds."
+                )
+                eval_btn = gr.Button("Run Legacy Eval", variant="primary")
+                eval_log = gr.Textbox(
+                    label="Eval log", lines=10, max_lines=20,
+                    interactive=False, show_copy_button=True,
                 )
 
-            with gr.Row():
-                with gr.Column(scale=1):
-                    eval_log = gr.Textbox(
-                        label="Eval log", lines=12, max_lines=20,
-                        interactive=False, show_copy_button=True,
+            with gr.Accordion("📄 Full eval report", open=False):
+                with gr.Row():
+                    eval_dropdown = gr.Dropdown(
+                        label="Select report", choices=[],
+                        interactive=True, scale=5,
                     )
-                with gr.Column(scale=2):
-                    with gr.Row():
-                        eval_dropdown = gr.Dropdown(
-                            label="Past eval reports", choices=[],
-                            interactive=True, scale=5,
-                        )
-                        refresh_eval_btn = gr.Button("🔄", scale=0)
-                    eval_out = gr.Markdown(value="*Run an evaluation or select a past report.*")
+                    refresh_eval_btn = gr.Button("🔄", scale=0)
+                eval_out = gr.Markdown(value="*Select a report above.*")
 
             # Wiring: eval
             eval_btn.click(fn=run_eval, outputs=[eval_log, eval_out], api_name=False).then(
                 fn=refresh_eval_dropdown, outputs=[eval_dropdown], api_name=False,
             ).then(
                 fn=make_score_chart, outputs=[score_plot], api_name=False,
+            ).then(
+                fn=make_legacy_summary_md, outputs=[legacy_summary], api_name=False,
             )
             refresh_eval_btn.click(fn=refresh_eval_dropdown, outputs=[eval_dropdown], api_name=False)
             eval_dropdown.change(fn=load_eval, inputs=[eval_dropdown], outputs=[eval_out], api_name=False)
 
-            # On load: populate eval dropdown + chart
+            # On load: populate eval dropdown + chart + summary
             demo.load(fn=refresh_eval_dropdown, outputs=[eval_dropdown], api_name=False)
             demo.load(fn=make_score_chart, outputs=[score_plot], api_name=False)
+            demo.load(fn=make_legacy_summary_md, outputs=[legacy_summary], api_name=False)
 
-        # ── Tab 3: AutoRubric Evaluation ────────────────────────────────────
-        with gr.Tab("🧪 AutoRubric Eval"):
-            ar_plot = gr.Plot(label="AutoRubric score history")
+        # ── Tab 3: AutoRubric — Agent Comparison ────────────────────────────
+        with gr.Tab("🧪 Agent Comparison (AutoRubric)"):
             gr.Markdown(
-                "**AutoRubric framework** (Rao & Callison-Burch, autorubric.org) — "
-                "analytic rubric, each criterion judged in its *own* LLM call to remove "
-                "the halo/conflation effect of the legacy one-call judge.\n\n"
-                "Same 40% structural layer as the legacy tab; the 60% LLM layer is the "
-                "AutoRubric normalized score over 7 ordinal dimensions **+ 3 negative "
-                "penalties** (anti-patterns). Set the `AUTORUBRIC_JUDGES` secret to 2+ "
-                "cross-family models to enable ensemble judging + inter-judge reliability."
+                "## Why a custom agent?\n\n"
+                "Each version of the EDB macro agent is graded against the same specialised "
+                "rubric — **v2 (full pipeline) vs v1 (no state) vs a general-purpose LLM** — "
+                "to show exactly where custom engineering adds value and answer the question: "
+                "*why does an analyst need this, rather than asking ChatGPT?*\n\n"
+                "Framework: [AutoRubric](https://autorubric.org) (Rao & Callison-Burch) — "
+                "analytic rubric, each criterion judged in its own LLM call (no halo effect). "
+                "10 binary structural criteria + 7 ordinal quality dimensions + 3 negative "
+                "penalties. 2-model ensemble: Claude Haiku + Gemini Flash, majority vote."
             )
 
-            with gr.Row():
-                ar_btn = gr.Button("▶  Run AutoRubric Eval", variant="primary", size="lg")
+            ar_plot    = gr.Plot(label="Agent comparison")
+            ar_summary = gr.Markdown(value="_Loading…_")
+
+            with gr.Accordion("▶  Run a new evaluation", open=False):
                 gr.Markdown(
-                    "*Fetches latest v2/v1/general briefs, grades each criterion "
-                    "atomically (~1–2 min), commits report + state.*"
+                    "Fetches the latest v2 / v1 / general briefs from GitHub, grades every "
+                    "criterion atomically with the 2-model ensemble, then commits the report "
+                    "and updates the comparison chart. Takes ~2–3 min."
+                )
+                ar_btn = gr.Button("Run AutoRubric Eval", variant="primary")
+                ar_log = gr.Textbox(
+                    label="Run log", lines=10, max_lines=20,
+                    interactive=False, show_copy_button=True,
                 )
 
-            with gr.Row():
-                with gr.Column(scale=1):
-                    ar_log = gr.Textbox(
-                        label="AutoRubric log", lines=12, max_lines=20,
-                        interactive=False, show_copy_button=True,
+            with gr.Accordion("📄 Full eval report", open=False):
+                with gr.Row():
+                    ar_dropdown = gr.Dropdown(
+                        label="Select report", choices=[],
+                        interactive=True, scale=5,
                     )
-                with gr.Column(scale=2):
-                    with gr.Row():
-                        ar_dropdown = gr.Dropdown(
-                            label="Past AutoRubric reports", choices=[],
-                            interactive=True, scale=5,
-                        )
-                        ar_refresh_btn = gr.Button("🔄", scale=0)
-                    ar_out = gr.Markdown(value="*Run an AutoRubric eval or select a past report.*")
+                    ar_refresh_btn = gr.Button("🔄", scale=0)
+                ar_out = gr.Markdown(value="*Select a report above.*")
 
-            # Wiring: autorubric eval
-            ar_btn.click(fn=run_autorubric_eval, outputs=[ar_log, ar_out], api_name=False).then(
+            # Wiring
+            ar_btn.click(
+                fn=run_autorubric_eval, outputs=[ar_log, ar_out], api_name=False,
+            ).then(
                 fn=refresh_autorubric_dropdown, outputs=[ar_dropdown], api_name=False,
             ).then(
-                fn=make_autorubric_chart, outputs=[ar_plot], api_name=False,
+                fn=make_autorubric_comparison_chart, outputs=[ar_plot], api_name=False,
+            ).then(
+                fn=make_autorubric_summary_md, outputs=[ar_summary], api_name=False,
             )
-            ar_refresh_btn.click(fn=refresh_autorubric_dropdown, outputs=[ar_dropdown], api_name=False)
-            ar_dropdown.change(fn=load_autorubric_eval, inputs=[ar_dropdown], outputs=[ar_out], api_name=False)
+            ar_refresh_btn.click(
+                fn=refresh_autorubric_dropdown, outputs=[ar_dropdown], api_name=False,
+            )
+            ar_dropdown.change(
+                fn=load_autorubric_eval, inputs=[ar_dropdown], outputs=[ar_out], api_name=False,
+            )
 
             demo.load(fn=refresh_autorubric_dropdown, outputs=[ar_dropdown], api_name=False)
-            demo.load(fn=make_autorubric_chart, outputs=[ar_plot], api_name=False)
+            demo.load(fn=make_autorubric_comparison_chart, outputs=[ar_plot], api_name=False)
+            demo.load(fn=make_autorubric_summary_md, outputs=[ar_summary], api_name=False)
 
 if __name__ == "__main__":
     demo.launch()

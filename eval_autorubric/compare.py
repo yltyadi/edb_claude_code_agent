@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 """
-Small head-to-head: OLD evaluator vs NEW AutoRubric evaluator on ONE brief.
+Head-to-head: OLD evaluator (one conflated LLM call) vs NEW AutoRubric (atomic per-criterion).
 
 Both paths use:
   - the SAME judge model (via OpenRouter)
   - the SAME 7 dimension definitions + scales (imported from eval/rubric.py)
-  - the SAME regex auto-check layer (40%) and the SAME 40/60 aggregation
+  - the SAME regex auto-check layer (40%) and 40/60 aggregation
 
-The ONLY thing that differs is HOW the 7 LLM dimensions are judged:
-  OLD  -> one LLM call scores all 7 dimensions at once   (holistic / conflated)
-  NEW  -> AutoRubric scores each dimension in its own call (atomic per-criterion)
+The ONLY difference is HOW the 7 LLM dimensions are judged:
+  OLD  → one LLM call scores all 7 dims at once (holistic / conflated)
+  NEW  → AutoRubric scores each dimension in its own LLM call (atomic per-criterion)
 
-This isolates the paper's central claim (atomic decomposition beats conflated
-holistic scoring) so it can be shown side by side. The production eval_autorubric
-rubric will be richer; this is a controlled comparison, not the final design.
+This isolates the paper's central claim so the two approaches can be compared directly.
 
 Usage:
   venv/bin/python -m eval_autorubric.compare [brief_path]
@@ -30,17 +28,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 import litellm
 
-from autorubric import Criterion, CriterionOption, LLMConfig, Rubric
+from autorubric import Criterion, LLMConfig, Rubric
 from autorubric.graders import CriterionGrader
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
-from eval.rubric import (  # noqa: E402
-    AUTOMATED_CHECKS, LLM_DIMENSIONS, AUTO_WEIGHT, LLM_WEIGHT,
-)
-from eval_autorubric.rubric_def import LEVEL_LABELS, LABEL_TO_LEVEL  # noqa: E402
+from eval.rubric import AUTOMATED_CHECKS, LLM_DIMENSIONS, AUTO_WEIGHT, LLM_WEIGHT  # noqa: E402
 
 JUDGE_MODEL = "openrouter/anthropic/claude-haiku-4-5"
 DEFAULT_BRIEF = ROOT / "outputs" / "brief_v2_2026-07-06_1209.md"
@@ -50,9 +45,18 @@ QUERY = (
     "EDB is a government-owned development finance institution pursuing Operation "
     "300bn (grow industrial GDP to AED 300bn by 2031) across five priority sectors: "
     "advanced technology, manufacturing, healthcare, renewables, food security. "
-    "The AED is pegged to USD at 3.6725, so US rate moves transmit via CBUAE -> "
-    "EIBOR -> EDB's floating-rate SME portfolio."
+    "The AED is pegged to USD at 3.6725, so US rate moves transmit via CBUAE → "
+    "EIBOR → EDB's floating-rate SME portfolio."
 )
+
+# 5-level ordinal options — plain dicts as shown in the paper (Listing 2)
+_OPTS_5 = [
+    {"label": "Absent",    "value": 0.00},
+    {"label": "Weak",      "value": 0.25},
+    {"label": "Adequate",  "value": 0.50},
+    {"label": "Strong",    "value": 0.75},
+    {"label": "Exemplary", "value": 1.00},
+]
 
 
 # ── shared: regex auto layer (identical for both) ──────────────────────────
@@ -99,42 +103,36 @@ Respond with ONLY valid JSON mapping each dimension id to its 1-5 score:
     return {d["id"]: int(data.get(d["id"], 0)) for d in LLM_DIMENSIONS}
 
 
-# ── NEW path: AutoRubric atomic per-criterion scoring of the same 7 dims ────
+# ── NEW path: AutoRubric atomic per-criterion scoring (Listing 2 + 4 pattern) ─
 def build_autorubric() -> Rubric:
+    """Build a 7-criterion rubric using plain dict options — paper Listing 2."""
     criteria = []
     for d in LLM_DIMENSIONS:
-        options = [
-            CriterionOption(label=LEVEL_LABELS[lvl], value=(lvl - 1) / 4.0,
-                            description=f"(level {lvl}/5) {d['scale'][lvl]}")
-            for lvl in sorted(d["scale"])
-        ]
+        anchors = " | ".join(
+            f"{lvl}/5: {d['scale'][lvl]}" for lvl in sorted(d["scale"])
+        )
         criteria.append(Criterion(
-            name=d["id"], weight=d["weight"], requirement=d["description"],
-            options=options, scale_type="ordinal",
+            name=d["id"],
+            weight=float(d["weight"]),
+            requirement=f"{d['description']} Anchors — {anchors}",
+            scale_type="ordinal",
+            options=_OPTS_5,
         ))
     return Rubric(criteria)
 
 
-def report_to_1_5(cr) -> int:
-    """Recover the 1-5 level AutoRubric chose for an ordinal criterion."""
-    mc = cr.final_multi_choice_verdict
-    if mc is not None and not getattr(mc, "na", False):
-        level = LABEL_TO_LEVEL.get(mc.selected_label)
-        if level is not None:
-            return level
-    val = cr.score_value                        # property, 0.0 - 1.0
-    if val is not None:
-        return round(val * 4) + 1
-    return 0
-
-
 async def new_llm_scores(brief: str) -> dict[str, int]:
+    """Grade with AutoRubric (Listing 4: single judge) and convert to 1-5 levels."""
     grader = CriterionGrader(
         llm_config=LLMConfig(model=JUDGE_MODEL, temperature=0.0,
                              max_parallel_requests=5),
     )
     result = await build_autorubric().grade(to_grade=brief, grader=grader, query=QUERY)
-    return {cr.criterion.name: report_to_1_5(cr) for cr in result.report}
+    scores = {}
+    for cr in result.report:
+        val = cr.score_value   # 0.0–1.0 from AutoRubric
+        scores[cr.criterion.name] = round(val * 4) + 1 if val is not None else 0
+    return scores
 
 
 # ── aggregation (identical formula for both) ────────────────────────────────
