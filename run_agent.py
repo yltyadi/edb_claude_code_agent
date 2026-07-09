@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-EDB Macro Intelligence Agent — standalone runner for GitHub Actions / any CI.
-Replicates the /edb-brief Claude Code pipeline using any OpenAI-compatible API.
+EDB Macro Intelligence Agent — agentic loop runner.
+
+Replaces the one-shot approach with a proper multi-turn tool-calling loop.
+Claude decides which data tools to call, in what order, sees each result,
+and adapts before writing the brief — matching Claude Code's interactive quality.
 
 Usage:
   OPENROUTER_API_KEY=xxx FRED_API_KEY=xxx python run_agent.py
-  OPENROUTER_MODEL=google/gemini-2.5-pro python run_agent.py   # override model
+  OPENROUTER_MODEL=google/gemini-2.5-pro python run_agent.py
 """
 
 import json
@@ -27,24 +30,161 @@ OUTPUTS_DIR = ROOT / "outputs"
 
 OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 MODEL = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-6")
+MAX_TURNS = 40  # safety cap — a full run typically uses ~20–25 turns
 
-# All tool commands to run in sequence
-TOOL_COMMANDS = [
-    ("fedfunds",      ["fred", "FEDFUNDS"]),
-    ("dgs10",         ["fred", "DGS10"]),
-    ("brent",         ["fred", "DCOILBRENTEU"]),
-    ("wti",           ["fred", "DCOILWTICO"]),
-    ("indpro",        ["fred", "INDPRO"]),
-    ("cpi",           ["fred", "CPIAUCSL"]),
-    ("t10yie",        ["fred", "T10YIE"]),
-    ("cbuae",         ["cbuae"]),
-    ("opec",          ["opec"]),
-    ("uae_gdp",       ["worldbank", "AE", "NY.GDP.MKTP.CD"]),
-    ("uae_industry",  ["worldbank", "AE", "NV.IND.TOTL.ZS"]),
-    ("uae_cpi",       ["worldbank", "AE", "FP.CPI.TOTL.ZG"]),
-    ("uae_fdi",       ["worldbank", "AE", "BX.KLT.DINV.CD.WD"]),
+
+# ── Tool definitions (OpenRouter / OpenAI tool-use format) ────────────────────
+
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "read_state",
+            "description": (
+                "Read outputs/state.json — the cross-session memory containing baselines "
+                "(yesterday's key figures), streaks (consecutive unchanged days), and last_run "
+                "metadata. Call this first to get temporal context for streak language."
+            ),
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_fred",
+            "description": (
+                "Fetch a FRED economic data series. Returns JSON with the latest value, "
+                "its date, and recent observations. Always check the value date — flag stale "
+                "series (value date > 7 days before today) and web-search a fresh figure."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "series_id": {
+                        "type": "string",
+                        "description": (
+                            "FRED series ID. Available: FEDFUNDS (Fed Funds Rate), DGS10 "
+                            "(10-yr Treasury), DCOILBRENTEU (Brent crude), DCOILWTICO (WTI), "
+                            "INDPRO (US Industrial Production), CPIAUCSL (US CPI), "
+                            "T10YIE (10-yr breakeven inflation)."
+                        ),
+                    }
+                },
+                "required": ["series_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_cbuae",
+            "description": "Fetch the CBUAE Base Rate and most recent policy statement.",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_opec",
+            "description": "Fetch the OPEC basket price and UAE production quota.",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_worldbank",
+            "description": "Fetch a World Bank indicator for a country.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "country": {
+                        "type": "string",
+                        "description": "ISO country code — always 'AE' for UAE indicators.",
+                    },
+                    "indicator": {
+                        "type": "string",
+                        "description": (
+                            "World Bank indicator code. Available: NY.GDP.MKTP.CD (UAE GDP), "
+                            "NV.IND.TOTL.ZS (UAE industry % GDP), FP.CPI.TOTL.ZG (UAE inflation), "
+                            "BX.KLT.DINV.CD.WD (UAE FDI inflows)."
+                        ),
+                    },
+                },
+                "required": ["country", "indicator"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "web_search",
+            "description": (
+                "Search the web for recent macro news. Use for: (1) fresh prices when a FRED "
+                "series is stale, (2) FOMC / CBUAE decisions since last run, (3) OPEC cuts or "
+                "production changes, (4) breaking signals in EDB's five priority sectors."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Search query — be specific, include dates where possible.",
+                    }
+                },
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_brief",
+            "description": (
+                "Write the completed brief to disk. Call exactly once, after all data gathering "
+                "and calculations are done. The content must be the full brief markdown."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "type": "string",
+                        "description": "The complete EDB brief in markdown format.",
+                    }
+                },
+                "required": ["content"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "update_state",
+            "description": (
+                "Update outputs/state.json with today's baselines, updated streaks, and "
+                "signals_fired_last_run. Call after write_brief, using the data you gathered. "
+                "Preserve all existing fields — only update the values you have fresh data for."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "state": {
+                        "type": "object",
+                        "description": (
+                            "The full updated state object. Must include: baselines (today's key "
+                            "figures), streaks (updated counts), signals_fired_last_run (list), "
+                            "last_run (date, timestamp, brief_path, agent_version)."
+                        ),
+                    }
+                },
+                "required": ["state"],
+            },
+        },
+    },
 ]
 
+
+# ── Core helpers ──────────────────────────────────────────────────────────────
 
 def log(msg: str) -> None:
     ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
@@ -54,12 +194,12 @@ def log(msg: str) -> None:
 def run_tool(args: list[str]) -> str:
     result = subprocess.run(
         [sys.executable, str(ROOT / "run_tools.py")] + args,
-        capture_output=True, text=True, cwd=str(ROOT), timeout=30
+        capture_output=True, text=True, cwd=str(ROOT), timeout=30,
     )
     output = result.stdout.strip()
     if not output:
         return json.dumps({"error": result.stderr.strip() or "no output"})
-    return output[:3000]  # cap per-tool output to avoid token overflow
+    return output[:3000]
 
 
 def web_search(query: str) -> str:
@@ -85,92 +225,109 @@ def save_state(state: dict) -> None:
     STATE_PATH.write_text(json.dumps(state, indent=2, default=str))
 
 
-def gather_tool_data() -> dict:
-    data = {}
-    for key, args in TOOL_COMMANDS:
-        log(f"  tool: {' '.join(args)}")
+def save_brief(content: str, agent_version: str) -> Path:
+    now = datetime.now()
+    ver = agent_version.lstrip("v")
+    filename = f"brief_v{ver}_{now.strftime('%Y-%m-%d_%H%M')}.md"
+    path = OUTPUTS_DIR / filename
+    OUTPUTS_DIR.mkdir(exist_ok=True)
+    path.write_text(content)
+    return path
+
+
+# ── Tool execution ────────────────────────────────────────────────────────────
+
+def execute_tool(name: str, args: dict, agent_version: str) -> tuple[str, Path | None]:
+    """Execute a tool call. Returns (result_string, optional_brief_path)."""
+    brief_path = None
+
+    if name == "read_state":
+        result = STATE_PATH.read_text() if STATE_PATH.exists() else json.dumps({})
+
+    elif name == "run_fred":
+        result = run_tool(["fred", args.get("series_id", "")])
+
+    elif name == "run_cbuae":
+        result = run_tool(["cbuae"])
+
+    elif name == "run_opec":
+        result = run_tool(["opec"])
+
+    elif name == "run_worldbank":
+        result = run_tool(["worldbank", args.get("country", "AE"), args.get("indicator", "")])
+
+    elif name == "web_search":
+        result = web_search(args.get("query", ""))
+
+    elif name == "write_brief":
+        brief_path = save_brief(args.get("content", ""), agent_version)
+        result = json.dumps({"brief_path": str(brief_path), "brief_name": brief_path.name})
+
+    elif name == "update_state":
         try:
-            data[key] = run_tool(args)
+            new_state = args.get("state", {})
+            if isinstance(new_state, dict) and new_state.get("last_run"):
+                save_state(new_state)
+                result = json.dumps({"ok": True})
+            else:
+                result = json.dumps({"error": "Invalid state — missing last_run field"})
         except Exception as e:
-            data[key] = json.dumps({"error": str(e)})
-    return data
+            result = json.dumps({"error": str(e)})
+
+    else:
+        result = json.dumps({"error": f"Unknown tool: {name}"})
+
+    return result, brief_path
 
 
-def gather_web_data(last_run_date: str) -> dict:
-    queries = [
-        f"Federal Reserve FOMC interest rate decision after:{last_run_date}",
-        f"CBUAE UAE central bank monetary policy after:{last_run_date}",
-        f"Brent crude oil price OPEC production after:{last_run_date}",
-        f"UAE manufacturing industrial sector economy after:{last_run_date}",
-        f"US CPI inflation PCE core after:{last_run_date}",
-        f"UAE food security agriculture imports after:{last_run_date}",
-        f"UAE renewables solar energy investment after:{last_run_date}",
-    ]
-    results = {}
-    for q in queries:
-        log(f"  search: {q[:70]}")
-        results[q] = web_search(q)
-    return results
+def _fmt_args(name: str, args: dict) -> str:
+    """Compact one-line display of tool arguments for the log."""
+    if name == "write_brief":
+        return f"content=<{len(args.get('content', ''))} chars>"
+    if name == "update_state":
+        return "state={...}"
+    return ", ".join(f"{k}={json.dumps(v)[:50]}" for k, v in args.items())
 
 
-def build_prompt(state: dict, tool_data: dict, search_data: dict) -> str:
+# ── Task prompt ───────────────────────────────────────────────────────────────
+
+def build_task_prompt(state: dict) -> str:
     now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    agent_version = state.get("agent_version", "v2").lstrip("v")
-    last_run_date = state.get("last_run", {}).get("date", "N/A")
-    baselines = state.get("baselines", {})
-    streaks = state.get("streaks", {})
-    signals_prior = state.get("signals_fired_last_run", [])
+    last_run_date = state.get("last_run", {}).get("date", "2026-01-01")
+    agent_version = state.get("agent_version", "v2")
 
-    parts = [
-        "## OPERATIONAL CONTEXT",
-        "You are operating via standalone API (not Claude Code).",
-        "All data gathering has been completed. DO NOT attempt to call tools or run code.",
-        "Your ONLY task is to write the brief using the data below.",
-        "All CLAUDE.md hard constraints still apply — including all four required calculations.",
-        "",
-        f"**Current UTC datetime:** {now_utc}",
-        f"**Agent version:** v{agent_version}",
-        f"**Last run date:** {last_run_date}",
-        "",
-        "## PRIOR-RUN STATE (from state.json)",
-        "Use these for streak language and trend comparisons:",
-        f"```json",
-        f"baselines: {json.dumps(baselines, indent=2)}",
-        f"streaks:   {json.dumps(streaks, indent=2)}",
-        f"signals_fired_last_run: {json.dumps(signals_prior)}",
-        "```",
-        "",
-        "## LIVE DATA TOOL OUTPUTS",
-        "(Use these as your primary quantitative inputs. Flag any null/error series.)",
-    ]
+    return f"""You are the EDB Macro Intelligence Agent ({agent_version}).
+Current UTC datetime: {now_utc}
+Last run date: {last_run_date}
 
-    for key, output in tool_data.items():
-        parts.append(f"\n### Tool: {key}\n```json\n{output}\n```")
+Generate the complete EDB Daily Macro Intelligence Brief now.
 
-    parts.append("\n## WEB SEARCH RESULTS (breaking signals since last run)")
-    parts.append("Classify each signal as [NEW] if after last_run_date, or [CONTINUING] if already in signals_fired_last_run.\n")
-    for query, result in search_data.items():
-        parts.append(f"\n### Query: `{query}`\n```json\n{result}\n```")
+Follow this sequence:
+1. Call read_state() to load cross-session baselines and streaks for trend language.
+2. Gather all macro data using the available tools:
+   - run_fred: FEDFUNDS, DGS10, DCOILBRENTEU, DCOILWTICO, INDPRO, CPIAUCSL, T10YIE
+   - run_cbuae(), run_opec()
+   - run_worldbank("AE", "NY.GDP.MKTP.CD"), run_worldbank("AE", "NV.IND.TOTL.ZS")
+   - run_worldbank("AE", "FP.CPI.TOTL.ZG"), run_worldbank("AE", "BX.KLT.DINV.CD.WD")
+3. For any FRED series where the value date is > 7 days before today, call web_search \
+to find a current figure before using it in calculations.
+4. Search the web for breaking signals since {last_run_date} — especially Fed/FOMC, \
+CBUAE policy, Brent/OPEC, and EDB's five priority sectors.
+5. Write the complete brief following all CLAUDE.md instructions. All four required \
+calculations must appear (EIBOR sensitivity, oil fiscal impact, petrochemical pass-through, \
+Operation 300bn run-rate).
+6. Call write_brief(content=...) with the full markdown.
+7. Call update_state(state={{...}}) with today's baselines, updated streaks, \
+signals_fired_last_run, and last_run metadata.
 
-    parts.append(f"""
-## YOUR TASK
-
-Write the complete EDB Daily Macro Intelligence Brief now, following every instruction in your system prompt (CLAUDE.md) exactly.
-
-All data has been pre-gathered above — do NOT attempt to call tools, fetch URLs, or run code. Use only the data provided.
-
-Three things to note for this standalone run:
-1. Start the brief with `---` (a plain markdown horizontal rule, not YAML frontmatter), then `# EDB Daily Macro Intelligence Brief`, then the bold header fields, then another `---`
-2. The brief must end with both a *Sources* section and a *Methodology* section — do not stop before writing them even if the brief runs long
-3. Current datetime for the header: {now_utc}
-
-Output ONLY the brief markdown — no preamble, no explanation.
-""")
-
-    return "\n".join(parts)
+All CLAUDE.md hard constraints apply — including the header format, five-sector matrix, \
+AED/USD peg chain, Sources section, and Methodology section."""
 
 
-def call_llm(system_prompt: str, user_prompt: str) -> str:
+# ── Agentic loop ──────────────────────────────────────────────────────────────
+
+def run_agentic_loop(system_prompt: str, task_prompt: str, agent_version: str) -> Path | None:
+    """Run the multi-turn agentic tool-calling loop. Returns the brief Path when written."""
     if not OPENROUTER_KEY:
         raise ValueError("OPENROUTER_API_KEY is not set")
 
@@ -183,89 +340,119 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
         },
     )
 
-    prompt_chars = len(system_prompt) + len(user_prompt)
-    log(f"Prompt size: {prompt_chars:,} chars (~{prompt_chars//4:,} tokens est)")
-    log(f"Calling LLM ({MODEL}) — this takes ~60–120 seconds...")
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        max_tokens=16384,
-        temperature=0.1,
-    )
-    choice = response.choices[0]
-    finish_reason = choice.finish_reason
-    content = choice.message.content or ""
-    log(f"LLM response: finish_reason={finish_reason}, chars={len(content)}")
-    if finish_reason == "length":
-        log("WARNING: response was cut off at max_tokens — brief will be incomplete")
-    if not content.strip():
-        raise ValueError(f"LLM returned empty content (finish_reason={finish_reason})")
-    return content
+    messages: list[dict] = [{"role": "user", "content": task_prompt}]
+    brief_path: Path | None = None
+
+    log(f"Agentic loop starting — model: {MODEL}, max turns: {MAX_TURNS}")
+
+    for turn in range(MAX_TURNS):
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "system", "content": system_prompt}] + messages,
+            tools=TOOLS,
+            max_tokens=16384,
+            temperature=0.1,
+        )
+        choice = response.choices[0]
+        msg = choice.message
+
+        # Append assistant message to conversation history
+        assistant_msg: dict = {"role": "assistant"}
+        if msg.content:
+            assistant_msg["content"] = msg.content
+        if msg.tool_calls:
+            assistant_msg["tool_calls"] = [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {
+                        "name": tc.function.name,
+                        "arguments": tc.function.arguments,
+                    },
+                }
+                for tc in msg.tool_calls
+            ]
+        messages.append(assistant_msg)
+
+        if choice.finish_reason == "stop":
+            log(f"Turn {turn + 1}: agent finished")
+            break
+
+        if choice.finish_reason != "tool_calls" or not msg.tool_calls:
+            log(f"Turn {turn + 1}: unexpected finish_reason={choice.finish_reason!r}, stopping")
+            break
+
+        # Execute all tool calls in this turn
+        tool_results = []
+        for tc in msg.tool_calls:
+            name = tc.function.name
+            try:
+                args = json.loads(tc.function.arguments)
+            except Exception:
+                args = {}
+
+            log(f"  [{turn + 1}] {name}({_fmt_args(name, args)})")
+            result, bp = execute_tool(name, args, agent_version)
+
+            if bp:
+                brief_path = bp
+                log(f"       → brief saved: {bp.name}")
+
+            tool_results.append({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": result,
+            })
+
+        messages.extend(tool_results)
+
+    else:
+        log(f"WARNING: hit MAX_TURNS ({MAX_TURNS}) safety cap — brief may be incomplete")
+
+    return brief_path
 
 
-def save_brief(content: str, agent_version: str) -> Path:
-    now = datetime.now()
-    # agent_version may be "v2" or "2" — normalise to just the number
-    ver = agent_version.lstrip("v")
-    filename = f"brief_v{ver}_{now.strftime('%Y-%m-%d_%H%M')}.md"
-    path = OUTPUTS_DIR / filename
-    OUTPUTS_DIR.mkdir(exist_ok=True)
-    path.write_text(content)
-    return path
-
-
-def update_state(state: dict, brief_path: Path) -> None:
-    now = datetime.now()
-    agent_version = state.get("agent_version", "v2")
-
-    state["last_updated"] = now.strftime("%Y-%m-%d")
-    state["last_run"] = {
-        "date": now.strftime("%Y-%m-%d"),
-        "timestamp": now.isoformat(),
-        "brief_path": str(brief_path.relative_to(ROOT)),
-        "agent_version": agent_version,
-    }
-
-    streaks = state.get("streaks", {})
-    streaks["eibor_unchanged_days"] = streaks.get("eibor_unchanged_days", 0) + 1
-    state["streaks"] = streaks
-
-    save_state(state)
-
+# ── Entry point ───────────────────────────────────────────────────────────────
 
 def main() -> None:
     if not OPENROUTER_KEY:
-        print("ERROR: OPENROUTER_API_KEY environment variable is not set.", file=sys.stderr)
+        print("ERROR: OPENROUTER_API_KEY is not set.", file=sys.stderr)
         sys.exit(1)
 
-    log(f"EDB Macro Intelligence Agent — model: {MODEL}")
-
     state = load_state()
-    last_run_date = state.get("last_run", {}).get("date", "2026-01-01")
     agent_version = state.get("agent_version", "v2").lstrip("v")
-    log(f"Agent v{agent_version} | Last run: {last_run_date}")
-
-    log("Gathering live data from tools...")
-    tool_data = gather_tool_data()
-
-    log("Running web searches...")
-    search_data = gather_web_data(last_run_date)
+    last_run_date = state.get("last_run", {}).get("date", "N/A")
+    log(f"EDB Macro Intelligence Agent v{agent_version} | model: {MODEL} | last run: {last_run_date}")
 
     system_prompt = CLAUDE_MD_PATH.read_text()
-    user_prompt = build_prompt(state, tool_data, search_data)
+    task_prompt = build_task_prompt(state)
 
-    brief_content = call_llm(system_prompt, user_prompt)
+    brief_path = run_agentic_loop(system_prompt, task_prompt, agent_version)
 
-    brief_path = save_brief(brief_content, agent_version)
+    if not brief_path or not brief_path.exists():
+        print("ERROR: Agent did not produce a brief.", file=sys.stderr)
+        sys.exit(1)
+
     log(f"Brief saved → {brief_path.name}")
 
-    update_state(state, brief_path)
-    log("state.json updated")
+    # Reload state — Claude may have updated it via update_state tool
+    state = load_state()
 
-    # Emit machine-readable summary for GitHub Actions to capture
+    # Fallback: ensure last_run is always set even if Claude skipped update_state
+    if not state.get("last_run", {}).get("brief_path"):
+        now = datetime.now()
+        state.setdefault("last_run", {}).update({
+            "date": now.strftime("%Y-%m-%d"),
+            "timestamp": now.isoformat(),
+            "brief_path": str(brief_path.relative_to(ROOT)),
+            "agent_version": f"v{agent_version}",
+        })
+        state["last_updated"] = now.strftime("%Y-%m-%d")
+        save_state(state)
+        log("state.json updated (fallback — agent did not call update_state)")
+    else:
+        log("state.json updated by agent")
+
     summary = {
         "status": "success",
         "brief_name": brief_path.name,

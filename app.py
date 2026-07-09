@@ -964,11 +964,6 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
         # ── Tab 2: Evaluation (legacy framework) ────────────────────────────
         with gr.Tab("📊 Agent Comparison (Legacy Eval)"):
             gr.Markdown(
-                "## Why a custom agent? — Legacy evaluator\n\n"
-                "Same question as the AutoRubric tab, answered by the legacy framework: "
-                "**20 regex structural checks (40%) + 7 quality dimensions judged in one LLM call (60%)**. "
-                "Compare scores side by side or use the AutoRubric tab for the more rigorous "
-                "atomic per-criterion evaluation.\n\n"
                 "*Note: judging all 7 dimensions in a single call risks halo effect — "
                 "a polished brief may receive uniformly high marks. The AutoRubric tab fixes this.*"
             )
@@ -1015,12 +1010,7 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
         # ── Tab 3: AutoRubric — Agent Comparison ────────────────────────────
         with gr.Tab("🧪 Agent Comparison (AutoRubric)"):
             gr.Markdown(
-                "## Why a custom agent?\n\n"
-                "Each version of the EDB macro agent is graded against the same specialised "
-                "rubric — **v2 (full pipeline) vs v1 (no state) vs a general-purpose LLM** — "
-                "to show exactly where custom engineering adds value and answer the question: "
-                "*why does an analyst need this, rather than asking ChatGPT?*\n\n"
-                "Framework: [AutoRubric](https://autorubric.org) (Rao & Callison-Burch) — "
+                "Framework: [AutoRubric](https://autorubric.org) — "
                 "analytic rubric, each criterion judged in its own LLM call (no halo effect). "
                 "10 binary structural criteria + 7 ordinal quality dimensions + 3 negative "
                 "penalties. 2-model ensemble: Claude Haiku + Gemini Flash, majority vote."
