@@ -28,12 +28,12 @@
 | Dimension | Wt | v2 Agent | v1 Agent | General LLM |
 |-----------|:--:|:--:|:--:|:--:|
 | Mandate Relevance                    | 20% | 5/5 | 5/5 | 3/5 |
-| Data Grounding & Source Citation     | 16% | 3/5 | 4/5 | 3/5 |
+| Data Grounding & Source Citation     | 16% | 5/5 | 4/5 | 4/5 |
 | Quantitative Accuracy & Calculation Discipline | 16% | 5/5 | 4/5 | 2/5 |
 | Output Structure Completeness        | 12% | 5/5 | 5/5 | 3/5 |
-| Action Specificity                   | 12% | 5/5 | 3/5 | 1/5 |
-| Data Integrity & Gap Disclosure      | 12% | 5/5 | 5/5 | 4/5 |
-| Trend & Continuity                   | 12% | 5/5 | 3/5 | 2/5 |
+| Action Specificity                   | 12% | 3/5 | 4/5 | 1/5 |
+| Data Integrity & Gap Disclosure      | 12% | 4/5 | 3/5 | 3/5 |
+| Trend & Continuity                   | 12% | 3/5 | 4/5 | 2/5 |
 
 ## 3 — Negative Penalties (anti-patterns — MET is bad)
 
@@ -47,7 +47,7 @@
 
 Ensemble of 2 judges (claude-haiku-4-5, gemini-2.5-flash), majority vote.
 
-- **v2 Agent**: mean inter-judge agreement 0.90
+- **v2 Agent**: mean inter-judge agreement 0.80
 - **v1 Agent**: mean inter-judge agreement 0.82
 - **General LLM**: mean inter-judge agreement 0.70
 
@@ -57,19 +57,20 @@ Ensemble of 2 judges (claude-haiku-4-5, gemini-2.5-flash), majority vote.
 
 | | v2 Agent | v1 Agent | General LLM |
 |--|:--:|:--:|:--:|
-| AutoRubric result.score        | 0.830 | 0.886 | 0.142 |
-| **Final Score / 100**          | **83.0** | **88.6** | **14.2** |
+| AutoRubric result.score        | 0.790 | 0.886 | 0.148 |
+| **Final Score / 100**          | **79.0** | **88.6** | **14.8** |
 
-- **v2 vs v1**: -5.7 pts
-- **v2 vs General**: +68.8 pts
-- **v1 vs General**: +74.4 pts
+- **v2 vs v1**: -9.7 pts
+- **v2 vs General**: +64.2 pts
+- **v1 vs General**: +73.9 pts
 
-**Token usage:** v2 Agent: 383161 / v1 Agent: 243191 / General LLM: 179784
+**Token usage:** v2 Agent: 383024 / v1 Agent: 242984 / General LLM: 179860
 
 ---
 
 ## v2 Improvement Targets
 
 - **action_flag_with_rationale** (FAIL): The submission contains no explicit action flags (MONITOR, REVIEW, or ESCALATE) with specific, evidence-based rationale tied to named EDB portfolio exposures, sector mandates, or thresholds. While the
-- **Data Grounding & Source Citation** (3/5): This submission exemplifies the sourcing standard. Every material number is traced to a named authority: CBUAE base rate (3.65%, confirmed July 13), EIBOR 3M (3.900%, July 10 CBUAE tool), Brent ($79.1
+- **Action Specificity** (3/5): The submission exemplifies the criterion across all dimensions. Every action flag (MONITOR/REVIEW/ESCALATE) names specific EDB teams or portfolio segments (e.g., 'healthcare borrowers with <30-day inv
+- **Trend & Continuity** (3/5): The submission exemplifies the highest standard (5/5) of temporal depth and baseline integration. It demonstrates: (1) multiple specific streak counts from state.json (CBUAE base rate '214 consecutive
 - **penalty: unsupported_number**: The brief contains multiple material quantitative figures that cannot be traced to named sources or shown calculations. Most notably: (1) The 60% petrochemical feedstock pass-through rate in Calculati
