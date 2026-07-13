@@ -4,8 +4,8 @@
   "last_updated": "2026-07-13",
   "last_run": {
     "date": "2026-07-13",
-    "timestamp": "2026-07-13T05:58:00.000000",
-    "brief_path": "outputs/brief_v2_2026-07-13_0802.md",
+    "timestamp": "2026-07-13T06:20:00.000000",
+    "brief_path": "outputs/brief_v2_2026-07-13_0820.md",
     "agent_version": "v2"
   },
   "baselines": {
@@ -22,45 +22,56 @@
     "breakeven_inflation_pct": 2.24,
     "uae_gdp_growth_forecast_pct": 5.0,
     "opec_basket_usd": null,
+    "uae_production_mbpd": 3.8,
+    "uae_gdp_usd_bn": 552.3,
+    "uae_industry_pct_gdp": 44.3,
+    "uae_fdi_inflows_usd_bn": 45.6,
+    "uae_cpi_inflation_pct": 1.25,
     "notes": {
-      "eibor": "3.900% as of July 10 2026 (CBUAE tool web fallback); -7.2bps from July 3 spike of 3.972%; CBUAE base rate 3.65% confirmed July 13; EIBOR-base spread 25bps (within normal 10-30bps range); new streak begins at 3.900%",
-      "brent": "July 13 web-sourced $79.11 (hdfcsky, brentwatch, energyriskiq); +4% surge on Hormuz closure announcement; FRED July 6 close $69.56 stale \u2014 overridden; 2nd consecutive session above $79",
-      "wti": "July 13 web-sourced $74.56 midpoint ($74.43-74.69); +4% surge; FRED July 6 close $69.60 stale \u2014 overridden",
-      "hormuz": "CRITICAL ESCALATION: Iran formally announced Strait of Hormuz closure July 13 2026 following fresh US military strikes. Brent +4% to $79.11. Scenario: Partial/temporary (35%, $72-80), Sustained 2-4 weeks (40%, $85-100), Full escalation (25%, $100-120+). ADNOC Fujairah pipeline (1.5 mb/d) provides partial bypass (~50% UAE export volume). Day 5 of active military exchange since July 8 ceasefire collapse.",
-      "iran_deal_status": "Hormuz formally closed by Iran July 13 2026. Ceasefire collapsed July 8. No back-channel diplomacy confirmed. Watch: Oman mediation, Lloyd's insurance suspension, US Navy response, ADNOC Fujairah capacity announcements.",
-      "fed": "June 17 FOMC (5th consecutive hold; Warsh inaugural; unanimous 12-0); dot plot median 3.8% implies one hike; FOMC minutes July 10 show officials deeply divided (half support hike by year-end); 25% probability July 29 hike (MoneyMorning, PredictMarketCap); June CPI due July 14 \u2014 CRITICAL; FEDFUNDS 3.63% (June, 42 days stale \u2014 assumed unchanged); next FOMC July 29 2026",
-      "cbuae": "3.65% confirmed July 13 2026; 213 consecutive unchanged days; EIBOR 3M 3.900% (July 10); peg intact",
+      "eibor": "3.900% as of July 10 2026 (CBUAE tool web fallback); -7.2bps from July 3 spike of 3.972%; CBUAE base rate 3.65% confirmed July 13; EIBOR-base spread 25bps (within normal 10-30bps range); 3 consecutive unchanged days (streak began July 10)",
+      "brent": "July 13 web-sourced $79.11 (state.json baseline from 05:58 UTC run); +4% surge on Hormuz closure announcement; FRED July 6 close $69.56 stale \u2014 overridden; 3rd consecutive rising session since July 8 ceasefire collapse",
+      "wti": "July 13 web-sourced $74.56 (state.json baseline from 05:58 UTC run); FRED July 6 close $69.60 stale \u2014 overridden",
+      "hormuz": "CRITICAL ESCALATION: Iran formally announced Strait of Hormuz closure July 13 2026 following fresh US military strikes. Brent +4% to $79.11. Scenario: Partial/temporary (35%, $72-80), Sustained 2-4 weeks (40%, $85-100), Full escalation (25%, $100-120+). ADNOC Fujairah pipeline (1.5 mb/d) provides partial bypass (~50% UAE export volume). Day 1 of Hormuz closure; Day 5 of active military exchange since July 8 ceasefire collapse.",
+      "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production reached 3.8 mb/d in June 2026 (Reuters July 6 2026) \u2014 near-record highs. UAE targeting 5 mb/d under We the UAE 2031. No longer quota-constrained.",
+      "make_it_in_emirates": "AED 180bn industrial procurement opportunities announced at Make it in the Emirates 2026. Localisation of 5,000+ products. Largest single Operation 300bn accelerant on record. If 20% converts to incremental industrial GDP over 5 years: AED 7.2bn/year additional pace.",
+      "fed": "June 17 FOMC (5th consecutive hold; Warsh inaugural; unanimous 12-0); dot plot median 3.8% implies one hike; FOMC minutes July 10 show officials deeply divided (half support hike by year-end); 25% probability July 29 hike; June CPI due July 14 \u2014 CRITICAL; FEDFUNDS 3.63% (June, 42 days stale \u2014 assumed unchanged); next FOMC July 29 2026",
+      "cbuae": "3.65% confirmed July 13 2026; 214 consecutive unchanged days; EIBOR 3M 3.900% (July 10); peg intact",
       "us_cpi": "May 2026: 4.2% YoY (last known); June 2026 data due July 14 (TOMORROW) \u2014 CRITICAL WATCH; FRED CPIAUCSL stale 73 days",
-      "us_pce": "May 2026 BEA confirmed June 25: core 3.4% YoY; next release July 30 2026 (June PCE)",
       "us_10yr": "4.54% (FRED July 9, -2bps from 4.56% July 8); breakeven inflation 2.24% (FRED July 10, +1bp from 2.23%); real yield ~2.30%",
-      "opec_plus": "OPEC basket price unavailable (scraper null); UAE exited OPEC+ April 25 2026; UAE production ~3.0 mb/d assumed",
-      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20bn/yr pace required; current pace AED 13.4bn/yr; AED 6.6bn/yr acceleration needed; at current pace ~2033.5 (2.5 years late); fiscal buffer $24.11/bbl at $79.11 Brent",
+      "opec_plus": "OPEC basket price unavailable (scraper null); UAE exited OPEC+ May 2026; UAE production 3.8 mb/d (Reuters July 6 2026)",
+      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20bn/yr pace required; current pace AED 6.7bn/yr; AED 13.3bn/yr acceleration needed; at current pace ~2040.9 (9.9 years late); with Make it in Emirates 20% conversion: AED 13.9bn/yr pace, ~2033.2 (2.2 years late); fiscal buffer $24.11/bbl at $79.11 Brent",
       "dgs10": "FRED July 9: 4.54% (-2bps from 4.56% July 8); breakeven 2.24% (July 10)",
       "fred_status": "FEDFUNDS 3.63% (June, 42 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 73 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 7 days stale \u2014 overridden by web $79.11 July 13); DCOILWTICO $69.60 (July 6, 7 days stale \u2014 web override $74.56 July 13); DGS10 4.54% (July 9, valid); T10YIE 2.24% (July 10, valid); CPIAUCSL May 2026 (73 days stale \u2014 June data due July 14)"
     }
   },
   "streaks": {
     "brent_direction": "up",
-    "brent_direction_sessions": 2,
+    "brent_direction_sessions": 3,
     "fed_hold_consecutive_meetings": 5,
     "eibor_unchanged_days": 3,
-    "cbuae_rate_unchanged_days": 213
+    "cbuae_rate_unchanged_days": 214
   },
   "signals_fired_last_run": [
-    "hormuz_FORMAL_CLOSURE_iran_july13_CRITICAL",
-    "brent_surge_plus4pct_79.11_hormuz_closure_july13",
+    "hormuz_FORMAL_CLOSURE_iran_july13_CRITICAL_day1",
+    "brent_surge_79.11_hormuz_closure_3rd_consecutive_rising_session",
+    "uae_opec_exit_confirmed_production_3.8mbpd_june2026",
+    "make_it_in_emirates_2026_aed180bn_industrial_procurement_announced",
     "fomc_minutes_july10_split_hike_hold_25pct_probability",
-    "fed_dot_plot_3.8pct_median_hike_implied",
     "us_cpi_june_july14_release_IMMINENT_CRITICAL",
-    "eibor_3.900pct_july10_retraced_from_3.972pct_spike",
-    "cbuae_3.65pct_unchanged_day213_continuing",
+    "eibor_3.900pct_july10_unchanged_day3",
+    "cbuae_3.65pct_unchanged_day214_continuing",
     "fed_5consecutive_holds_continuing",
-    "operation_300bn_aed200bn_milestone_continuing_pace_deficit",
+    "operation_300bn_aed200bn_milestone_pace_deficit_13.3bn_yr_acceleration_needed",
+    "make_it_in_emirates_20pct_conversion_improves_pace_to_13.9bn_yr",
     "dgs10_4.54pct_valid",
-    "t10yie_2.24pct_day3_continuing",
-    "petrochemical_feedstock_aed213.5mn_additional_vs_july9",
-    "hormuz_fujairah_bypass_50pct_coverage_risk",
-    "fomc_july29_hike_risk_25pct_probability"
+    "t10yie_2.24pct_continuing",
+    "petrochemical_feedstock_aed1440mn_additional_annual_at_79.11_brent",
+    "hormuz_healthcare_food_supply_chain_critical_2_3_week_risk",
+    "hormuz_fujairah_bypass_50pct_coverage_1.5mbpd",
+    "fomc_july29_hike_risk_25pct_probability",
+    "uae_fdi_45.6bn_2024_worldbank",
+    "uae_gdp_552bn_2024_worldbank",
+    "uae_industry_44.3pct_gdp_2024_worldbank"
   ],
   "eval_history": [
     {
@@ -165,32 +176,6 @@
           }
         }
       }
-    }
-  ],
-  "claude_md_patches_applied": [
-    {
-      "date": "2026-07-01",
-      "dimension": "data_grounding",
-      "score": 3,
-      "patch": "EIBOR estimation basis must appear as first line of calculation code block (not only in narrative). Sources section is mandatory with vintage dates for all FRED series. Keep brief body under 3,500 words so Sources/Methodology always fit."
-    },
-    {
-      "date": "2026-07-01",
-      "dimension": "structure_completeness",
-      "score": 3,
-      "patch": "Use **Key number:** (bold, lowercase) and **Watch list \u2014 next 72 hours:** (bold) \u2014 not ### headings. Sources and Methodology are mandatory final sections; compress Type C before omitting them. Do not generate YAML frontmatter \u2014 header must use bold markdown key-value pairs after plain --- HR."
-    },
-    {
-      "date": "2026-07-01",
-      "dimension": "data_integrity",
-      "score": 3,
-      "patch": "EIBOR estimation chain must be first line of calculation block: 'EIBOR source: estimated (state.json baseline X.XX%; CBUAE base rate X.XX% confirmed [date]; N consecutive days)'. Stale FRED series must be disclosed by name with vintage dates in body AND Methodology. Methodology section is mandatory in every brief."
-    },
-    {
-      "date": "2026-06-22",
-      "dimension": "quantitative_accuracy",
-      "score": 3,
-      "patch": "Always run all four required calculations (EIBOR sensitivity, oil fiscal USD+AED, petrochemical pass-through, Op300bn run-rate) in every brief including same-day refreshes. Corrected Op300bn method: (200-133)/(300-133)=40.1% of gap, not 200/300=66.7%."
     }
   ],
   "autorubric_eval_history": [
@@ -308,6 +293,32 @@
         "v2_vs_gen": 80.7,
         "v1_vs_gen": 86.4
       }
+    }
+  ],
+  "claude_md_patches_applied": [
+    {
+      "date": "2026-07-01",
+      "dimension": "data_grounding",
+      "score": 3,
+      "patch": "EIBOR estimation basis must appear as first line of calculation code block (not only in narrative). Sources section is mandatory with vintage dates for all FRED series. Keep brief body under 3,500 words so Sources/Methodology always fit."
+    },
+    {
+      "date": "2026-07-01",
+      "dimension": "structure_completeness",
+      "score": 3,
+      "patch": "Use **Key number:** (bold, lowercase) and **Watch list \u2014 next 72 hours:** (bold) \u2014 not ### headings. Sources and Methodology are mandatory final sections; compress Type C before omitting them. Do not generate YAML frontmatter \u2014 header must use bold markdown key-value pairs after plain --- HR."
+    },
+    {
+      "date": "2026-07-01",
+      "dimension": "data_integrity",
+      "score": 3,
+      "patch": "EIBOR estimation chain must be first line of calculation block: 'EIBOR source: estimated (state.json baseline X.XX%; CBUAE base rate X.XX% confirmed [date]; N consecutive days)'. Stale FRED series must be disclosed by name with vintage dates in body AND Methodology. Methodology section is mandatory in every brief."
+    },
+    {
+      "date": "2026-06-22",
+      "dimension": "quantitative_accuracy",
+      "score": 3,
+      "patch": "Always run all four required calculations (EIBOR sensitivity, oil fiscal USD+AED, petrochemical pass-through, Op300bn run-rate) in every brief including same-day refreshes. Corrected Op300bn method: (200-133)/(300-133)=40.1% of gap, not 200/300=66.7%."
     }
   ]
 }
