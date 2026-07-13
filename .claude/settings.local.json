@@ -19,7 +19,8 @@
       "WebFetch(domain:www.tradingkey.com)",
       "WebFetch(domain:www.aljazeera.com)",
       "WebFetch(domain:www.axios.com)",
-      "Bash(venv/bin/python *)"
+      "Bash(venv/bin/python *)",
+      "WebFetch(domain:www.centralbank.ae)"
     ]
   }
 }

@@ -4,13 +4,13 @@
   "last_updated": "2026-07-13",
   "last_run": {
     "date": "2026-07-13",
-    "timestamp": "2026-07-13T06:20:00.000000",
-    "brief_path": "outputs/brief_v2_2026-07-13_0820.md",
+    "timestamp": "2026-07-13T06:41:00.000000",
+    "brief_path": "outputs/brief_v2_2026-07-13_0843.md",
     "agent_version": "v2"
   },
   "baselines": {
     "eibor_3m_pct": 3.9,
-    "brent_usd": 79.11,
+    "brent_usd": 79.15,
     "wti_usd": 74.56,
     "fed_funds_upper_pct": 3.75,
     "fed_funds_lower_pct": 3.5,
@@ -29,9 +29,9 @@
     "uae_cpi_inflation_pct": 1.25,
     "notes": {
       "eibor": "3.900% as of July 10 2026 (CBUAE tool web fallback); -7.2bps from July 3 spike of 3.972%; CBUAE base rate 3.65% confirmed July 13; EIBOR-base spread 25bps (within normal 10-30bps range); 3 consecutive unchanged days (streak began July 10)",
-      "brent": "July 13 web-sourced $79.11 (state.json baseline from 05:58 UTC run); +4% surge on Hormuz closure announcement; FRED July 6 close $69.56 stale \u2014 overridden; 3rd consecutive rising session since July 8 ceasefire collapse",
+      "brent": "July 13 06:41 UTC refresh: $79.15 (range $79.02-79.22 across sources), intraday-flat vs the $79.11 baseline set at 05:58 UTC (+$0.04); +4% surge vs pre-Hormuz levels holds but has not extended further despite CENTCOM denial of the closure claim; FRED July 6 close $69.56 stale \u2014 overridden; still the 3rd consecutive rising session since July 8 ceasefire collapse (no new session closed yet today)",
       "wti": "July 13 web-sourced $74.56 (state.json baseline from 05:58 UTC run); FRED July 6 close $69.60 stale \u2014 overridden",
-      "hormuz": "CRITICAL ESCALATION: Iran formally announced Strait of Hormuz closure July 13 2026 following fresh US military strikes. Brent +4% to $79.11. Scenario: Partial/temporary (35%, $72-80), Sustained 2-4 weeks (40%, $85-100), Full escalation (25%, $100-120+). ADNOC Fujairah pipeline (1.5 mb/d) provides partial bypass (~50% UAE export volume). Day 1 of Hormuz closure; Day 5 of active military exchange since July 8 ceasefire collapse.",
+      "hormuz": "CONTINUING - ESCALATED (06:41 UTC refresh): Iran claims Strait of Hormuz closed 'until further notice'; US Central Command now formally denies the closure and reports additional strikes to preserve freedom of navigation. Brent intraday-flat at $79.02-79.22 (vs $79.11 baseline set 05:58 UTC) - no further price re-rating yet despite the contested denial. Scenario: Partial/temporary (35%, $72-80), Sustained 2-4 weeks (40%, $85-100), Full escalation (25%, $100-120+) - retained from prior run, CENTCOM pushback is a soft signal toward the lower end but not yet formally re-weighted. ADNOC Fujairah pipeline (1.5 mb/d) provides partial bypass (~50% UAE export volume). Day 1 of closure claim; Day 5 of active military exchange since July 8 ceasefire collapse.",
       "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production reached 3.8 mb/d in June 2026 (Reuters July 6 2026) \u2014 near-record highs. UAE targeting 5 mb/d under We the UAE 2031. No longer quota-constrained.",
       "make_it_in_emirates": "AED 180bn industrial procurement opportunities announced at Make it in the Emirates 2026. Localisation of 5,000+ products. Largest single Operation 300bn accelerant on record. If 20% converts to incremental industrial GDP over 5 years: AED 7.2bn/year additional pace.",
       "fed": "June 17 FOMC (5th consecutive hold; Warsh inaugural; unanimous 12-0); dot plot median 3.8% implies one hike; FOMC minutes July 10 show officials deeply divided (half support hike by year-end); 25% probability July 29 hike; June CPI due July 14 \u2014 CRITICAL; FEDFUNDS 3.63% (June, 42 days stale \u2014 assumed unchanged); next FOMC July 29 2026",
@@ -52,8 +52,8 @@
     "cbuae_rate_unchanged_days": 214
   },
   "signals_fired_last_run": [
-    "hormuz_FORMAL_CLOSURE_iran_july13_CRITICAL_day1",
-    "brent_surge_79.11_hormuz_closure_3rd_consecutive_rising_session",
+    "hormuz_centcom_denial_continuing_escalated_day1_closure_claim",
+    "brent_intraday_flat_79.15_vs_79.11_morning_baseline",
     "uae_opec_exit_confirmed_production_3.8mbpd_june2026",
     "make_it_in_emirates_2026_aed180bn_industrial_procurement_announced",
     "fomc_minutes_july10_split_hike_hold_25pct_probability",
@@ -65,11 +65,10 @@
     "make_it_in_emirates_20pct_conversion_improves_pace_to_13.9bn_yr",
     "dgs10_4.54pct_valid",
     "t10yie_2.24pct_continuing",
-    "petrochemical_feedstock_aed1440mn_additional_annual_at_79.11_brent",
+    "petrochemical_feedstock_aed1448mn_additional_annual_at_79.15_brent",
     "hormuz_healthcare_food_supply_chain_critical_2_3_week_risk",
     "hormuz_fujairah_bypass_50pct_coverage_1.5mbpd",
     "fomc_july29_hike_risk_25pct_probability",
-    "uae_fdi_45.6bn_2024_worldbank",
     "uae_gdp_552bn_2024_worldbank",
     "uae_industry_44.3pct_gdp_2024_worldbank"
   ],
