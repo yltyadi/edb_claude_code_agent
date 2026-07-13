@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.autorubric_cache/
+.git/
+.env
+docs/

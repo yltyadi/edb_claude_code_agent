@@ -6,6 +6,7 @@ Usage:
   python3 run_tools.py worldbank <country_code> <indicator>
   python3 run_tools.py cbuae
   python3 run_tools.py opec
+  python3 run_tools.py search "<query>" [max_results]
 
 Prints JSON to stdout. Exits 0 on success, 1 on error.
 """
@@ -54,8 +55,18 @@ def main():
         result = scrape_opec_data()
         print(json.dumps(result, default=str, indent=2))
 
+    elif tool == "search":
+        if len(sys.argv) < 3:
+            print(json.dumps({"error": 'Usage: run_tools.py search "<query>" [max_results]'}))
+            sys.exit(1)
+        from tools.web_search import web_search
+        query = sys.argv[2]
+        max_results = int(sys.argv[3]) if len(sys.argv) > 3 else 5
+        result = web_search(query, max_results=max_results)
+        print(json.dumps(result, default=str, indent=2))
+
     else:
-        print(json.dumps({"error": f"Unknown tool: {tool}. Choose: fred, worldbank, cbuae, opec"}))
+        print(json.dumps({"error": f"Unknown tool: {tool}. Choose: fred, worldbank, cbuae, opec, search"}))
         sys.exit(1)
 
 

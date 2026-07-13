@@ -152,11 +152,16 @@ def run_brief():
         log += f"⚠️ State sync failed (proceeding anyway): {e}\n\n"
     yield log, ""
 
-    log += "🚀 Running EDB agent — takes ~2–3 minutes…\n"
+    # USE_AGENT_SDK=1 runs the Claude Agent SDK runner (real code execution via Bash,
+    # routed to OpenRouter). Default stays on the legacy hand-rolled loop for instant
+    # rollback. Both write to outputs/ and emit the same SUMMARY_JSON contract.
+    use_sdk = os.environ.get("USE_AGENT_SDK", "").strip() in ("1", "true", "True")
+    runner = "run_agent_sdk.py" if use_sdk else "run_agent.py"
+    log += f"🚀 Running EDB agent ({runner}) — takes ~2–5 minutes…\n"
     yield log, ""
 
     proc = subprocess.Popen(
-        ["python", "run_agent.py"],
+        ["python", runner],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         text=True, bufsize=1, env={**os.environ},
     )
