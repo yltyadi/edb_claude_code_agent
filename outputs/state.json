@@ -523,6 +523,121 @@
         "v2_vs_gen": 0.0,
         "v1_vs_gen": 0.0
       }
+    },
+    {
+      "eval_date": "2026-07-13",
+      "framework": "autorubric",
+      "report_path": "outputs/eval_autorubric_2026-07-13.md",
+      "judges": [
+        "openrouter/anthropic/claude-haiku-4-5",
+        "openrouter/google/gemini-2.5-flash"
+      ],
+      "ensemble": true,
+      "briefs": {
+        "v2": "brief_v2_2026-07-13_0820.md",
+        "v1": "brief_v1_2026-06-17_0700.md",
+        "general": "brief_general_2026-06-17.md"
+      },
+      "scores": {
+        "v2": {
+          "final_score": 83.0,
+          "llm_score": 0.83,
+          "mean_agreement": 0.9,
+          "binary": {
+            "sections_complete": true,
+            "sector_matrix_complete": true,
+            "required_calculations_present": true,
+            "sources_with_vintage_dates": true,
+            "peg_chain_traced": true,
+            "watch_list_specific": true,
+            "action_flag_with_rationale": false,
+            "calculation_block_aed": true,
+            "header_metadata_complete": true,
+            "prior_state_referenced": true
+          },
+          "dims": {
+            "mandate_relevance": 5,
+            "data_grounding": 3,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 5,
+            "action_specificity": 5,
+            "data_integrity": 5,
+            "trend_continuity": 5
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": true
+          }
+        },
+        "v1": {
+          "final_score": 88.6,
+          "llm_score": 0.886,
+          "mean_agreement": 0.825,
+          "binary": {
+            "sections_complete": true,
+            "sector_matrix_complete": true,
+            "required_calculations_present": true,
+            "sources_with_vintage_dates": true,
+            "peg_chain_traced": true,
+            "watch_list_specific": true,
+            "action_flag_with_rationale": true,
+            "calculation_block_aed": true,
+            "header_metadata_complete": true,
+            "prior_state_referenced": true
+          },
+          "dims": {
+            "mandate_relevance": 5,
+            "data_grounding": 4,
+            "quantitative_accuracy": 4,
+            "structure_completeness": 5,
+            "action_specificity": 3,
+            "data_integrity": 5,
+            "trend_continuity": 3
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": false
+          }
+        },
+        "general": {
+          "final_score": 14.2,
+          "llm_score": 0.142,
+          "mean_agreement": 0.7,
+          "binary": {
+            "sections_complete": false,
+            "sector_matrix_complete": false,
+            "required_calculations_present": false,
+            "sources_with_vintage_dates": false,
+            "peg_chain_traced": false,
+            "watch_list_specific": false,
+            "action_flag_with_rationale": false,
+            "calculation_block_aed": false,
+            "header_metadata_complete": false,
+            "prior_state_referenced": false
+          },
+          "dims": {
+            "mandate_relevance": 3,
+            "data_grounding": 3,
+            "quantitative_accuracy": 2,
+            "structure_completeness": 3,
+            "action_specificity": 1,
+            "data_integrity": 4,
+            "trend_continuity": 2
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": true
+          }
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": -5.7,
+        "v2_vs_gen": 68.8,
+        "v1_vs_gen": 74.4
+      }
     }
   ],
   "claude_md_patches_applied": [
