@@ -739,12 +739,12 @@ def make_autorubric_summary_md():
         f"| 🥈 v1 Custom Agent | {fs('v1')}/100 | {bp('v1')} | Custom prompting + sector mapping, no cross-session memory |\n"
         f"| ❌ General LLM | {fs('general')}/100 | {bp('general')} | Off-the-shelf assistant with no EDB context, tools, or calculation templates |\n\n"
         f"{gap_line}\n\n"
-        f"> **Why does an analyst need this custom agent?** A standard LLM assistant cannot: "
-        f"(1) fetch live macro data via FRED/CBUAE/OPEC APIs, "
-        f"(2) trace the AED/USD peg chain through to EIBOR and EDB's SME loan portfolio, "
-        f"(3) maintain cross-session baselines for trend language (\"unchanged for 187 days\"), "
-        f"(4) map every signal to EDB's five priority sectors with quantified impact. "
-        f"The score gap quantifies exactly what the custom engineering delivers."
+        # f"> **Why does an analyst need this custom agent?** A standard LLM assistant cannot: "
+        # f"(1) fetch live macro data via FRED/CBUAE/OPEC APIs, "
+        # f"(2) trace the AED/USD peg chain through to EIBOR and EDB's SME loan portfolio, "
+        # f"(3) maintain cross-session baselines for trend language (\"unchanged for 187 days\"), "
+        # f"(4) map every signal to EDB's five priority sectors with quantified impact. "
+        # f"The score gap quantifies exactly what the custom engineering delivers."
     )
 
 def _latest_legacy_eval():
