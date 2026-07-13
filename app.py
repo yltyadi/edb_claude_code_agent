@@ -517,6 +517,7 @@ def run_autorubric_eval():
         from eval_autorubric.runner import grade_all
         from eval_autorubric.report import format_report
         from eval_autorubric.config import judge_models
+        from autorubric.rate_limit import RateLimitPool
     except Exception as e:
         yield f"❌ AutoRubric engine import failed: {e}", ""
         return
@@ -549,6 +550,14 @@ def run_autorubric_eval():
     yield log, ""
 
     try:
+        # RateLimitPool is a process-wide singleton whose semaphores/locks bind to
+        # whichever event loop first touches them. This app's process stays alive
+        # across requests while each click opens a fresh loop via asyncio.run(), so
+        # a pool populated by an earlier click is bound to an already-closed loop —
+        # every judge call then fails with "Semaphore ... bound to a different event
+        # loop" and every criterion silently scores 0. Reset before each run so the
+        # pool is rebuilt fresh inside the loop that's actually going to use it.
+        RateLimitPool.reset_instance()
         graded = asyncio.run(grade_all(briefs, judges))
     except Exception as e:
         yield log + f"\n❌ Grading failed: {e}", ""
