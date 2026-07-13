@@ -4,14 +4,14 @@
   "last_updated": "2026-07-13",
   "last_run": {
     "date": "2026-07-13",
-    "timestamp": "2026-07-13T06:41:00.000000",
-    "brief_path": "outputs/brief_v2_2026-07-13_0843.md",
+    "timestamp": "2026-07-13T07:05:00.000000",
+    "brief_path": "outputs/brief_v2_2026-07-13_0905.md",
     "agent_version": "v2"
   },
   "baselines": {
     "eibor_3m_pct": 3.9,
-    "brent_usd": 79.15,
-    "wti_usd": 74.56,
+    "brent_usd": 79.2,
+    "wti_usd": 74.51,
     "fed_funds_upper_pct": 3.75,
     "fed_funds_lower_pct": 3.5,
     "cbuae_base_rate_pct": 3.65,
@@ -28,49 +28,55 @@
     "uae_fdi_inflows_usd_bn": 45.6,
     "uae_cpi_inflation_pct": 1.25,
     "notes": {
-      "eibor": "3.900% as of July 10 2026 (CBUAE tool web fallback); -7.2bps from July 3 spike of 3.972%; CBUAE base rate 3.65% confirmed July 13; EIBOR-base spread 25bps (within normal 10-30bps range); 3 consecutive unchanged days (streak began July 10)",
-      "brent": "July 13 06:41 UTC refresh: $79.15 (range $79.02-79.22 across sources), intraday-flat vs the $79.11 baseline set at 05:58 UTC (+$0.04); +4% surge vs pre-Hormuz levels holds but has not extended further despite CENTCOM denial of the closure claim; FRED July 6 close $69.56 stale \u2014 overridden; still the 3rd consecutive rising session since July 8 ceasefire collapse (no new session closed yet today)",
-      "wti": "July 13 web-sourced $74.56 (state.json baseline from 05:58 UTC run); FRED July 6 close $69.60 stale \u2014 overridden",
-      "hormuz": "CONTINUING - ESCALATED (06:41 UTC refresh): Iran claims Strait of Hormuz closed 'until further notice'; US Central Command now formally denies the closure and reports additional strikes to preserve freedom of navigation. Brent intraday-flat at $79.02-79.22 (vs $79.11 baseline set 05:58 UTC) - no further price re-rating yet despite the contested denial. Scenario: Partial/temporary (35%, $72-80), Sustained 2-4 weeks (40%, $85-100), Full escalation (25%, $100-120+) - retained from prior run, CENTCOM pushback is a soft signal toward the lower end but not yet formally re-weighted. ADNOC Fujairah pipeline (1.5 mb/d) provides partial bypass (~50% UAE export volume). Day 1 of closure claim; Day 5 of active military exchange since July 8 ceasefire collapse.",
+      "eibor": "3.900% as of July 10 2026 (CBUAE tool web fallback); CBUAE base rate 3.65% confirmed July 13; EIBOR-base spread 25bps (within normal 10-30bps range); 3 consecutive unchanged days (streak began July 10); estimated unchanged July 13",
+      "brent": "July 13 07:02 UTC: $79.20 midpoint (TradingEconomics $78.93 / BrentWatch $79.49); FRED July 6 close $69.56 stale \u2014 overridden; +$9.64/bbl vs pre-escalation close; 4th consecutive rising session since July 8 ceasefire collapse",
+      "wti": "July 13 web-sourced $74.51 (ConvexTrade/FXLeaders); FRED July 6 close $69.60 stale \u2014 overridden",
+      "hormuz": "CONTINUING - Day 6 of active military exchange since July 8 ceasefire collapse. Iran claims Strait closed 'until further notice'; US CENTCOM formally denies closure and reports additional strikes. Brent $79.20 \u2014 at upper bound of partial disruption scenario ($72-80). Scenarios: Partial/temporary (35%, $72-80), Sustained 2-4 weeks (40%, $85-100), Full escalation (25%, $100-120+). ADNOC Fujairah pipeline (1.5 mb/d) provides ~50% UAE export bypass coverage.",
       "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production reached 3.8 mb/d in June 2026 (Reuters July 6 2026) \u2014 near-record highs. UAE targeting 5 mb/d under We the UAE 2031. No longer quota-constrained.",
-      "make_it_in_emirates": "AED 180bn industrial procurement opportunities announced at Make it in the Emirates 2026. Localisation of 5,000+ products. Largest single Operation 300bn accelerant on record. If 20% converts to incremental industrial GDP over 5 years: AED 7.2bn/year additional pace.",
+      "make_it_in_emirates": "AED 180bn industrial procurement opportunities announced at Make it in the Emirates 2026. Localisation of 5,000+ products. Largest single Operation 300bn accelerant on record. If 20% converts to incremental industrial GDP over 5 years: AED 7.2bn/year additional pace \u2014 closes the AED 6.6bn/yr pace deficit.",
       "fed": "June 17 FOMC (5th consecutive hold; Warsh inaugural; unanimous 12-0); dot plot median 3.8% implies one hike; FOMC minutes July 10 show officials deeply divided (half support hike by year-end); 25% probability July 29 hike; June CPI due July 14 \u2014 CRITICAL; FEDFUNDS 3.63% (June, 42 days stale \u2014 assumed unchanged); next FOMC July 29 2026",
-      "cbuae": "3.65% confirmed July 13 2026; 214 consecutive unchanged days; EIBOR 3M 3.900% (July 10); peg intact",
+      "cbuae": "3.65% confirmed July 13 2026; 214 consecutive unchanged days; EIBOR 3M 3.900% (July 10 est.); peg intact",
       "us_cpi": "May 2026: 4.2% YoY (last known); June 2026 data due July 14 (TOMORROW) \u2014 CRITICAL WATCH; FRED CPIAUCSL stale 73 days",
-      "us_10yr": "4.54% (FRED July 9, -2bps from 4.56% July 8); breakeven inflation 2.24% (FRED July 10, +1bp from 2.23%); real yield ~2.30%",
+      "us_10yr": "4.54% (FRED July 9, valid, -2bps from 4.56% July 8); breakeven inflation 2.24% (FRED July 10, valid, +1bp from 2.23%); real yield ~2.30%",
       "opec_plus": "OPEC basket price unavailable (scraper null); UAE exited OPEC+ May 2026; UAE production 3.8 mb/d (Reuters July 6 2026)",
-      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20bn/yr pace required; current pace AED 6.7bn/yr; AED 13.3bn/yr acceleration needed; at current pace ~2040.9 (9.9 years late); with Make it in Emirates 20% conversion: AED 13.9bn/yr pace, ~2033.2 (2.2 years late); fiscal buffer $24.11/bbl at $79.11 Brent",
+      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20.0bn/yr pace required; current pace AED 13.4bn/yr; AED 6.6bn/yr acceleration needed; at current pace ~2034 (3 years late); with Make it in Emirates 20% conversion: AED 20.6bn/yr pace, on track for 2031; fiscal buffer $24.20/bbl at $79.20 Brent; AED 123.4bn/yr fiscal surplus above breakeven",
       "dgs10": "FRED July 9: 4.54% (-2bps from 4.56% July 8); breakeven 2.24% (July 10)",
-      "fred_status": "FEDFUNDS 3.63% (June, 42 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 73 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 7 days stale \u2014 overridden by web $79.11 July 13); DCOILWTICO $69.60 (July 6, 7 days stale \u2014 web override $74.56 July 13); DGS10 4.54% (July 9, valid); T10YIE 2.24% (July 10, valid); CPIAUCSL May 2026 (73 days stale \u2014 June data due July 14)"
+      "fred_status": "FEDFUNDS 3.63% (June, 42 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 73 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 7 days stale \u2014 overridden by web $79.20 July 13); DCOILWTICO $69.60 (July 6, 7 days stale \u2014 web override $74.51 July 13); DGS10 4.54% (July 9, valid); T10YIE 2.24% (July 10, valid); CPIAUCSL May 2026 (73 days stale \u2014 June data due July 14)",
+      "petrochemical": "AED 1,278mn/yr additional feedstock cost at $79.20 Brent (+$9.64/bbl surge); net manufacturing headwind ~AED 960mn/yr after ADNOC offset; 60% pass-through rate applied to AED 17.5bn feedstock base"
     }
   },
   "streaks": {
     "brent_direction": "up",
-    "brent_direction_sessions": 3,
+    "brent_direction_sessions": 4,
     "fed_hold_consecutive_meetings": 5,
     "eibor_unchanged_days": 3,
     "cbuae_rate_unchanged_days": 214
   },
   "signals_fired_last_run": [
-    "hormuz_centcom_denial_continuing_escalated_day1_closure_claim",
-    "brent_intraday_flat_79.15_vs_79.11_morning_baseline",
+    "hormuz_day6_military_exchange_continuing_centcom_denial",
+    "brent_79.20_4th_consecutive_rising_session",
+    "wti_74.51_july13",
+    "brent_fred_stale_overridden_web_79.20",
+    "wti_fred_stale_overridden_web_74.51",
     "uae_opec_exit_confirmed_production_3.8mbpd_june2026",
-    "make_it_in_emirates_2026_aed180bn_industrial_procurement_announced",
-    "fomc_minutes_july10_split_hike_hold_25pct_probability",
-    "us_cpi_june_july14_release_IMMINENT_CRITICAL",
-    "eibor_3.900pct_july10_unchanged_day3",
-    "cbuae_3.65pct_unchanged_day214_continuing",
-    "fed_5consecutive_holds_continuing",
-    "operation_300bn_aed200bn_milestone_pace_deficit_13.3bn_yr_acceleration_needed",
-    "make_it_in_emirates_20pct_conversion_improves_pace_to_13.9bn_yr",
-    "dgs10_4.54pct_valid",
-    "t10yie_2.24pct_continuing",
-    "petrochemical_feedstock_aed1448mn_additional_annual_at_79.15_brent",
-    "hormuz_healthcare_food_supply_chain_critical_2_3_week_risk",
+    "make_it_in_emirates_2026_aed180bn_industrial_procurement",
+    "fomc_5consecutive_holds_july29_hike_25pct_probability",
+    "us_cpi_june_july14_release_CRITICAL_TOMORROW",
+    "eibor_3.900pct_july10_estimated_unchanged_day3",
+    "cbuae_3.65pct_unchanged_day214",
+    "peg_chain_traced_fed_cbuae_eibor_edb_sme",
+    "operation_300bn_aed200bn_milestone_pace_deficit_6.6bn_yr",
+    "make_it_in_emirates_20pct_conversion_closes_pace_deficit",
+    "dgs10_4.54pct_valid_july9",
+    "t10yie_2.24pct_valid_july10_real_yield_2.30pct",
+    "petrochemical_feedstock_aed1278mn_additional_annual_at_79.20_brent",
+    "hormuz_healthcare_food_supply_chain_2_3_week_risk",
     "hormuz_fujairah_bypass_50pct_coverage_1.5mbpd",
-    "fomc_july29_hike_risk_25pct_probability",
-    "uae_gdp_552bn_2024_worldbank",
-    "uae_industry_44.3pct_gdp_2024_worldbank"
+    "uae_fiscal_surplus_aed123.4bn_yr_at_79.20_brent",
+    "uae_gdp_552.3bn_2024_worldbank",
+    "uae_industry_44.3pct_gdp_2024_worldbank",
+    "uae_fdi_45.6bn_2024_worldbank",
+    "fomc_minutes_july10_split_hike_hold_25pct_probability"
   ],
   "eval_history": [
     {
@@ -106,768 +112,22 @@
             "silent_stale_or_estimated_data": true,
             "unsupported_number": false
           }
-        },
-        "v1": {
-          "final_score": 75.0,
-          "llm_norm": 0.65,
-          "structural_passed": 18,
-          "mean_agreement": 1.0,
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 5,
-            "action_specificity": 5,
-            "data_integrity": 5,
-            "trend_continuity": 2
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "general": {
-          "final_score": 21.4,
-          "llm_norm": 0.19,
-          "structural_passed": 5,
-          "mean_agreement": 1.0,
-          "dims": {
-            "mandate_relevance": 2,
-            "data_grounding": 3,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 2,
-            "action_specificity": 1,
-            "data_integrity": 2,
-            "trend_continuity": 1
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": false
-          }
         }
-      },
-      "deltas": {
-        "v2_vs_v1": 9.6,
-        "v2_vs_gen": 63.2,
-        "v1_vs_gen": 53.6
       }
     },
     {
       "eval_date": "2026-07-02",
       "v2_brief_path": "outputs/brief_v2_2026-07-01_1502.md",
-      "v1_brief_path": "outputs/brief_v1_2026-06-17_0700.md",
-      "general_brief_path": "outputs/brief_general_2026-06-17.md",
       "scores": {
         "v2": {
           "auto_passed": 20,
           "auto_total": 20,
-          "final_score": 100.0,
-          "dimension_scores": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 5,
-            "action_specificity": 5,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          }
+          "final_score": 100.0
         }
       }
     }
   ],
   "autorubric_eval_history": [
-    {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_0802.md",
-        "v1": "brief_v1_2026-06-17_0700.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 92.6,
-          "llm_score": 0.926,
-          "mean_agreement": 0.9,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 3,
-            "action_specificity": 4,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": false
-          }
-        },
-        "v1": {
-          "final_score": 98.3,
-          "llm_score": 0.983,
-          "mean_agreement": 0.925,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 5,
-            "action_specificity": 4,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": false
-          }
-        },
-        "general": {
-          "final_score": 11.9,
-          "llm_score": 0.119,
-          "mean_agreement": 0.675,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 3,
-            "data_grounding": 2,
-            "quantitative_accuracy": 2,
-            "structure_completeness": 4,
-            "action_specificity": 1,
-            "data_integrity": 3,
-            "trend_continuity": 2
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        }
-      },
-      "deltas": {
-        "v2_vs_v1": -5.7,
-        "v2_vs_gen": 80.7,
-        "v1_vs_gen": 86.4
-      }
-    },
-    {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_0820.md",
-        "v1": "brief_v1_2026-06-17_0700.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 0.0,
-          "llm_score": 0.0,
-          "mean_agreement": 0.85,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 1,
-            "data_grounding": 1,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 1,
-            "data_integrity": 1,
-            "trend_continuity": 1
-          },
-          "penalties": {
-            "generic_market_commentary": true,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "v1": {
-          "final_score": 0.0,
-          "llm_score": 0.0,
-          "mean_agreement": 1.0,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 1,
-            "data_grounding": 1,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 1,
-            "data_integrity": 1,
-            "trend_continuity": 1
-          },
-          "penalties": {
-            "generic_market_commentary": true,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "general": {
-          "final_score": 0.0,
-          "llm_score": 0.0,
-          "mean_agreement": 1.0,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 1,
-            "data_grounding": 1,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 1,
-            "data_integrity": 1,
-            "trend_continuity": 1
-          },
-          "penalties": {
-            "generic_market_commentary": true,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        }
-      },
-      "deltas": {
-        "v2_vs_v1": 0.0,
-        "v2_vs_gen": 0.0,
-        "v1_vs_gen": 0.0
-      }
-    },
-    {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_0820.md",
-        "v1": "brief_v1_2026-06-17_0700.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 0.0,
-          "llm_score": 0.0,
-          "mean_agreement": 0.85,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 1,
-            "data_grounding": 1,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 1,
-            "data_integrity": 1,
-            "trend_continuity": 1
-          },
-          "penalties": {
-            "generic_market_commentary": true,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "v1": {
-          "final_score": 0.0,
-          "llm_score": 0.0,
-          "mean_agreement": 1.0,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 1,
-            "data_grounding": 1,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 1,
-            "data_integrity": 1,
-            "trend_continuity": 1
-          },
-          "penalties": {
-            "generic_market_commentary": true,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "general": {
-          "final_score": 0.0,
-          "llm_score": 0.0,
-          "mean_agreement": 1.0,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 1,
-            "data_grounding": 1,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 1,
-            "data_integrity": 1,
-            "trend_continuity": 1
-          },
-          "penalties": {
-            "generic_market_commentary": true,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        }
-      },
-      "deltas": {
-        "v2_vs_v1": 0.0,
-        "v2_vs_gen": 0.0,
-        "v1_vs_gen": 0.0
-      }
-    },
-    {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_0820.md",
-        "v1": "brief_v1_2026-06-17_0700.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 83.0,
-          "llm_score": 0.83,
-          "mean_agreement": 0.9,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 3,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 5,
-            "action_specificity": 5,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        },
-        "v1": {
-          "final_score": 88.6,
-          "llm_score": 0.886,
-          "mean_agreement": 0.825,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 4,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 5,
-            "action_specificity": 3,
-            "data_integrity": 5,
-            "trend_continuity": 3
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": false
-          }
-        },
-        "general": {
-          "final_score": 14.2,
-          "llm_score": 0.142,
-          "mean_agreement": 0.7,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 3,
-            "data_grounding": 3,
-            "quantitative_accuracy": 2,
-            "structure_completeness": 3,
-            "action_specificity": 1,
-            "data_integrity": 4,
-            "trend_continuity": 2
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        }
-      },
-      "deltas": {
-        "v2_vs_v1": -5.7,
-        "v2_vs_gen": 68.8,
-        "v1_vs_gen": 74.4
-      }
-    },
-    {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_0820.md",
-        "v1": "brief_v1_2026-06-17_0700.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 79.0,
-          "llm_score": 0.79,
-          "mean_agreement": 0.8,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 5,
-            "action_specificity": 3,
-            "data_integrity": 4,
-            "trend_continuity": 3
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        },
-        "v1": {
-          "final_score": 88.6,
-          "llm_score": 0.886,
-          "mean_agreement": 0.825,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 4,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 5,
-            "action_specificity": 4,
-            "data_integrity": 3,
-            "trend_continuity": 4
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": false
-          }
-        },
-        "general": {
-          "final_score": 14.8,
-          "llm_score": 0.148,
-          "mean_agreement": 0.7,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 3,
-            "data_grounding": 4,
-            "quantitative_accuracy": 2,
-            "structure_completeness": 3,
-            "action_specificity": 1,
-            "data_integrity": 3,
-            "trend_continuity": 2
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        }
-      },
-      "deltas": {
-        "v2_vs_v1": -9.7,
-        "v2_vs_gen": 64.2,
-        "v1_vs_gen": 73.9
-      }
-    },
-    {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_0843.md",
-        "v1": "brief_v1_2026-06-17_0700.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 83.5,
-          "llm_score": 0.835,
-          "mean_agreement": 0.875,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": false,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 4,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 4,
-            "action_specificity": 5,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": false
-          }
-        },
-        "v1": {
-          "final_score": 96.0,
-          "llm_score": 0.96,
-          "mean_agreement": 0.875,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 4,
-            "action_specificity": 5,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": false
-          }
-        },
-        "general": {
-          "final_score": 12.5,
-          "llm_score": 0.125,
-          "mean_agreement": 0.7,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 4,
-            "data_grounding": 2,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 3,
-            "action_specificity": 1,
-            "data_integrity": 3,
-            "trend_continuity": 3
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        }
-      },
-      "deltas": {
-        "v2_vs_v1": -12.5,
-        "v2_vs_gen": 71.0,
-        "v1_vs_gen": 83.5
-      }
-    },
     {
       "eval_date": "2026-07-13",
       "framework": "autorubric",
@@ -898,116 +158,47 @@
             "calculation_block_aed": true,
             "header_metadata_complete": true,
             "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 4,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 3,
-            "action_specificity": 5,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": false
-          }
-        },
-        "v1": {
-          "final_score": 67.0,
-          "llm_score": 0.67,
-          "mean_agreement": 0.75,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": false,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 3,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 5,
-            "action_specificity": 4,
-            "data_integrity": 4,
-            "trend_continuity": 3
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "general": {
-          "final_score": 9.1,
-          "llm_score": 0.091,
-          "mean_agreement": 0.7,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 2,
-            "data_grounding": 3,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 4,
-            "action_specificity": 1,
-            "data_integrity": 3,
-            "trend_continuity": 2
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
           }
         }
-      },
-      "deltas": {
-        "v2_vs_v1": 14.8,
-        "v2_vs_gen": 72.7,
-        "v1_vs_gen": 58.0
       }
     }
   ],
   "claude_md_patches_applied": [
     {
+      "date": "2026-07-13",
+      "dimension": "peg_chain_traced",
+      "score": "FAIL",
+      "patch": "AED/USD peg transmission chain must appear as one explicit connected arrow-chain sentence in every brief. Use literal form: Fed [action] at X.XX% \u2192 CBUAE mirrors at X.XX% \u2192 EIBOR 3M at X.XX% \u2192 EDB floating-rate portfolio at EIBOR+200bps = X.XX% \u2192 SME quarterly debt service [impact]. Non-droppable element of Type A on every run."
+    },
+    {
+      "date": "2026-07-13",
+      "dimension": "silent_stale_or_estimated_data",
+      "score": "PENALTY",
+      "patch": "Tag every inline use of estimated EIBOR with (est.) directly next to the figure in every scenario line of the calculation block, not just once at the top. EIBOR source line must be first line of calculation block."
+    },
+    {
       "date": "2026-07-01",
       "dimension": "data_grounding",
       "score": 3,
-      "patch": "EIBOR estimation basis must appear as first line of calculation code block (not only in narrative). Sources section is mandatory with vintage dates for all FRED series. Keep brief body under 3,500 words so Sources/Methodology always fit."
+      "patch": "EIBOR estimation basis must appear as first line of calculation code block. Sources section mandatory with vintage dates. Keep brief body under 3,500 words."
     },
     {
       "date": "2026-07-01",
       "dimension": "structure_completeness",
       "score": 3,
-      "patch": "Use **Key number:** (bold, lowercase) and **Watch list \u2014 next 72 hours:** (bold) \u2014 not ### headings. Sources and Methodology are mandatory final sections; compress Type C before omitting them. Do not generate YAML frontmatter \u2014 header must use bold markdown key-value pairs after plain --- HR."
+      "patch": "Use **Key number:** (bold, lowercase) and **Watch list \u2014 next 72 hours:** (bold). Sources and Methodology mandatory. No YAML frontmatter."
     },
     {
       "date": "2026-07-01",
       "dimension": "data_integrity",
       "score": 3,
-      "patch": "EIBOR estimation chain must be first line of calculation block: 'EIBOR source: estimated (state.json baseline X.XX%; CBUAE base rate X.XX% confirmed [date]; N consecutive days)'. Stale FRED series must be disclosed by name with vintage dates in body AND Methodology. Methodology section is mandatory in every brief."
+      "patch": "EIBOR estimation chain must be first line of calculation block. Stale FRED series disclosed by name with vintage dates in body AND Methodology. Methodology section mandatory."
     },
     {
       "date": "2026-06-22",
       "dimension": "quantitative_accuracy",
       "score": 3,
-      "patch": "Always run all four required calculations (EIBOR sensitivity, oil fiscal USD+AED, petrochemical pass-through, Op300bn run-rate) in every brief including same-day refreshes. Corrected Op300bn method: (200-133)/(300-133)=40.1% of gap, not 200/300=66.7%."
+      "patch": "Always run all four required calculations in every brief. Corrected Op300bn method: (200-133)/(300-133)=40.1% of gap, not 200/300=66.7%."
     }
   ]
 }
