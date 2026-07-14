@@ -4,14 +4,14 @@
   "last_updated": "2026-07-14",
   "last_run": {
     "date": "2026-07-14",
-    "timestamp": "2026-07-14T10:30:00.000000",
-    "brief_path": "outputs/brief_v2_2026-07-14_1030.md",
+    "timestamp": "2026-07-14T11:15:00.000000",
+    "brief_path": "outputs/brief_v2_2026-07-14_1520.md",
     "agent_version": "v2"
   },
   "baselines": {
     "eibor_3m_pct": 3.9,
     "brent_usd": 87.09,
-    "wti_usd": 80.84,
+    "wti_usd": 79.56,
     "fed_funds_upper_pct": 3.75,
     "fed_funds_lower_pct": 3.5,
     "cbuae_base_rate_pct": 3.65,
@@ -28,49 +28,53 @@
     "uae_fdi_inflows_usd_bn": 45.6,
     "uae_cpi_inflation_pct": 1.25,
     "notes": {
-      "eibor": "3.900% (est.) as of July 10 2026 (last live CBUAE confirmation); CBUAE base rate 3.65% confirmed July 13; CBUAE tool returned null July 14 \u2014 state.json fallback; EIBOR-base spread 25bps; 5 consecutive unchanged days (streak began July 10)",
-      "brent": "July 14 2026: $87.09 (TradingEconomics); OilPrice.com $87.06 corroborates. +4.5% session. +$17.53/bbl vs pre-Hormuz FRED close $69.56. FRED July 6 $69.56 stale \u2014 overridden. Hormuz Day 135 escalation: IRGC ballistic strikes Jordan US base + two supertankers. Crisis pressure index 90 (Extreme).",
-      "wti": "July 14 TradingEconomics $80.84 (+3.45% session). FRED July 6 $69.60 stale \u2014 overridden.",
-      "hormuz": "Day 135 of formal closure. IRGC ballistic missile strikes on US base in Jordan + two supertankers in strait (July 14). 34 ships/day vs 88 normal (39% throughput). War-risk insurance 8x. Crisis index 90 (Extreme). Escalation forecast 65 (High). Polymarket 3% odds normal traffic by July 31. ADNOC Fujairah bypass 1.5 mb/d (~50% UAE export coverage). Ceasefire collapsed July 8. Iran-Oman talks paused.",
+      "eibor": "3.900% (est.) as of July 14 2026; CBUAE base rate 3.65% confirmed July 14; last live EIBOR confirmation July 10 2026; EIBOR-base spread 25bps; 6 consecutive unchanged days (streak began July 9)",
+      "brent": "July 14 2026: $87.09 (TradingEconomics); Fortune $86.99 corroborates. Flat vs. prior session $87.09. 7th session at elevated Hormuz-crisis levels. +$17.53/bbl vs pre-escalation FRED close $69.56. FRED July 6 $69.56 stale \u2014 overridden.",
+      "wti": "July 14 FXLeaders $79.56 (\u2212$1.28, \u22121.6% vs prior $80.84). US-Iran interim deal reported \u2014 partial war premium removal. FRED July 6 $69.60 stale \u2014 overridden. Brent-WTI spread $7.53 (elevated vs normal $2-4).",
+      "hormuz": "Day 135+ of formal closure. US-Iran interim deal reported July 14 (FXLeaders) \u2014 unconfirmed, partial war premium removal. 34 ships/day vs 88 normal (39% throughput). ADNOC Fujairah bypass 1.5 mb/d (~50% UAE export coverage). Interim deal: increased Iranian oil exports possible but Hormuz not yet reopened.",
       "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production 3.8 mb/d (Reuters July 6 2026). Targeting 5 mb/d by 2031.",
       "make_it_in_emirates": "AED 180bn industrial procurement opportunities (Make it in the Emirates 2026). 20% conversion = AED 7.2bn/yr additional pace \u2014 closes the AED 6.6bn/yr deficit.",
-      "fed": "June 17 FOMC \u2014 5th consecutive hold; Fed Funds 3.50\u20133.75%. July 2026: no rate change (pre-July 29 FOMC). July 29 FOMC upcoming \u2014 25% hike probability. June CPI due July 14 (8:30 ET = 12:30 UTC). FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged). TradingEconomics confirms 3.75% current.",
-      "cbuae": "3.65% confirmed July 13 2026. CBUAE tool returned null July 14 (web fallback failed). State.json baseline used. 215 consecutive unchanged days.",
-      "us_cpi": "May 2026: 4.20% YoY (FRED stale). June 2026 CPI due July 14 at 8:30 ET \u2014 not yet released at brief generation time (10:30 UTC). Forecast ~4.1\u20134.2%.",
-      "us_10yr": "4.56% (FRED July 10, +2bps from 4.54% July 9). Breakeven 2.26% (FRED July 13, +2bps from 2.24%; NEW). Real yield ~2.30%.",
+      "fed": "June 17 FOMC \u2014 5th consecutive hold; Fed Funds 3.50\u20133.75%. July 29 FOMC upcoming \u2014 ~25% hike probability pre-June CPI. June CPI due July 14 at 12:30 UTC \u2014 not yet released at brief generation (11:15 UTC). FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged).",
+      "cbuae": "3.65% confirmed July 14 2026. 216 consecutive unchanged days.",
+      "us_cpi": "May 2026: 4.20% YoY (FRED stale). June 2026 CPI due July 14 at 12:30 UTC \u2014 not yet released at brief generation time (11:15 UTC). Forecast ~4.1\u20134.2%.",
+      "us_10yr": "4.56% (FRED July 10, valid, +2bps from 4.54% July 9). Breakeven 2.26% (FRED July 13, valid, +2bps from 2.24%). Real yield ~2.30%.",
       "opec_plus": "OPEC basket price unavailable (scraper null). UAE exited OPEC+ May 2026. UAE production 3.8 mb/d.",
-      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20.0bn/yr pace required; current pace AED 13.4bn/yr; deficit AED 6.6bn/yr; at current pace ~2034 (3 years late); fiscal buffer $32.09/bbl at $87.09 Brent; AED 163.5bn/yr fiscal surplus above breakeven",
+      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20.0bn/yr pace required; current pace AED 13.4bn/yr; deficit AED 6.6bn/yr; at current pace ~2034 (3 years late); fiscal surplus [A] AED 163.4bn/yr at $87.09 Brent; war-premium uplift [B] AED 89.3bn/yr; post-deal scenario [C] AED 74.1bn/yr",
       "dgs10": "FRED July 10: 4.56% (+2bps from 4.54% July 9); breakeven 2.26% (July 13)",
-      "fred_status": "FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 74 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 8 days stale \u2014 overridden by web $87.09 July 14); DCOILWTICO $69.60 (July 6, 8 days stale \u2014 web override $80.84 July 14); DGS10 4.56% (July 10, valid); T10YIE 2.26% (July 13, valid, NEW); CPIAUCSL May 2026 (74 days stale \u2014 June due today)",
-      "petrochemical": "AED 1,985mn/yr net feedstock additional cost at $87.09 Brent vs pre-escalation $69.56; gross AED 2,646mn/yr (60% pass-through on AED 17.5bn); ~25% ADNOC offset; +AED 1,229mn/yr vs prior brief ($78.95)",
-      "world_bank": "All three World Bank AE API calls timed out July 14. Prior state.json baselines used: UAE GDP $552.3bn, industry 44.3% GDP, CPI 1.25%."
+      "fred_status": "FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 74 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 8 days stale \u2014 overridden by web $87.09 July 14); DCOILWTICO $69.60 (July 6, 8 days stale \u2014 web override $79.56 July 14); DGS10 4.56% (July 10, valid); T10YIE 2.26% (July 13, valid); CPIAUCSL May 2026 (74 days stale \u2014 June due today 12:30 UTC, not yet released)",
+      "petrochemical": "AED 1,985mn/yr net feedstock additional cost at $87.09 Brent vs pre-escalation $69.56; gross AED 2,646mn/yr (60% pass-through on AED 17.5bn); ~25% ADNOC offset; UNCHANGED from prior brief (Brent flat session-on-session)",
+      "world_bank": "All four World Bank AE API calls timed out July 14 (4th consecutive session). Prior state.json baselines used: UAE GDP $552.3bn, industry 44.3% GDP, CPI 1.25%, FDI $45.6bn.",
+      "us_iran_deal": "FXLeaders July 14 2026 reports US-Iran interim deal removing war premium, allowing increased Iranian oil exports. Unconfirmed. WTI fell $1.28 to $79.56 on this signal. Brent held at $87.09 (Hormuz routing risk still priced in). Monitor Brent-WTI spread compression below $5 as confirmation signal."
     }
   },
   "streaks": {
-    "brent_direction": "up",
-    "brent_direction_sessions": 6,
+    "brent_direction": "flat",
+    "brent_direction_sessions": 1,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 5,
-    "cbuae_rate_unchanged_days": 215
+    "eibor_unchanged_days": 6,
+    "cbuae_rate_unchanged_days": 216
   },
   "signals_fired_last_run": [
-    "hormuz_day135_irgc_ballistic_jordan_supertanker_strikes_new_escalation",
-    "brent_87.09_tradingeconomics_jul14_up_4.5pct_6th_rising_session",
-    "wti_80.84_tradingeconomics_jul14_up_3.45pct",
-    "uae_fiscal_surplus_aed163.5bn_yr_at_87.09_brent",
-    "petrochemical_feedstock_aed1985mn_net_vs_pre_escalation_aed1229mn_additional_vs_prior",
-    "fomc_5consecutive_holds_july29_upcoming_cpi_conditional",
-    "us_cpi_june_jul14_830et_not_yet_released_critical_watch",
-    "eibor_3.900pct_estimated_unchanged_day5",
-    "cbuae_3.65pct_unchanged_day215_tool_null_fallback",
-    "peg_chain_traced_fed_cbuae_eibor_edb_sme_5.90pct_ads_877091",
-    "operation_300bn_aed200bn_milestone_pace_deficit_6.6bn_yr",
-    "t10yie_2.26pct_valid_july13_new_plus2bps",
+    "us_iran_interim_deal_reported_jul14_war_premium_partial_removal_unconfirmed",
+    "wti_79.56_fxleaders_jul14_down_1.28_first_decline_6_sessions",
+    "brent_87.09_flat_session_7th_elevated_hormuz_level",
+    "brent_wti_spread_7.53_elevated_vs_normal_2_4",
+    "uae_fiscal_surplus_aed163.4bn_yr_figure_A_at_87.09_brent",
+    "war_premium_uplift_aed89.3bn_yr_figure_B_vs_pre_escalation",
+    "post_deal_scenario_aed74.1bn_yr_figure_C_if_brent_returns_69.56",
+    "petrochemical_feedstock_aed1985mn_net_unchanged_session_on_session",
+    "fomc_5consecutive_holds_july29_upcoming_25pct_hike_probability",
+    "june_cpi_due_1230utc_today_not_yet_released_critical_watch",
+    "eibor_3.900pct_estimated_unchanged_day6",
+    "cbuae_3.65pct_unchanged_day216_confirmed_today",
+    "peg_chain_traced_fed_cbuae_eibor_edb_sme_5.90pct_ads_252321",
+    "operation_300bn_aed200bn_milestone_pace_deficit_6.6bn_yr_40.1pct_gap",
+    "make_it_in_emirates_aed180bn_pipeline_7.2bn_yr_conversion",
+    "t10yie_2.26pct_valid_july13_real_yield_2.30pct",
     "dgs10_4.56pct_valid_july10_plus2bps",
-    "hormuz_34_ships_88_normal_crisis_index_90_extreme",
-    "hormuz_adnoc_fujairah_bypass_50pct_coverage",
-    "straits_live_jul14_1010utc_escalation_confirmed",
-    "worldbank_all_three_timeout_state_fallback"
+    "worldbank_all_four_timeout_state_fallback_4th_consecutive_session",
+    "hormuz_34_ships_88_normal_crisis_index_ongoing",
+    "adnoc_fujairah_bypass_50pct_coverage_1.5mbpd"
   ],
   "eval_history": [
     {
@@ -97,72 +101,22 @@
         "v1": {
           "auto_passed": 15,
           "auto_total": 20,
-          "final_score": 73.7,
-          "dimension_scores": {
-            "mandate_relevance": 4,
-            "data_grounding": 4,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 4,
-            "action_specificity": 3,
-            "data_integrity": 4,
-            "trend_continuity": 2
-          }
+          "final_score": 73.7
         },
         "general": {
           "auto_passed": 4,
           "auto_total": 20,
-          "final_score": 29.1,
-          "dimension_scores": {
-            "mandate_relevance": 2,
-            "data_grounding": 3,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 1,
-            "data_integrity": 2,
-            "trend_continuity": 2
-          }
+          "final_score": 29.1
         }
-      },
-      "deltas": {
-        "v2_vs_v1": 20.3,
-        "v2_vs_gen": 64.9,
-        "v1_vs_gen": 44.6
-      },
-      "dimensions_patched_v2": []
+      }
     },
     {
       "eval_date": "2026-07-08",
       "framework": "autorubric",
       "report_path": "outputs/eval_autorubric_2026-07-08.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5"
-      ],
-      "ensemble": false,
-      "briefs": {
-        "v2": "brief_v2_2026-07-06_1209.md",
-        "v1": "brief_v1_2026-06-17_0700.md",
-        "general": "brief_general_2026-06-17.md"
-      },
       "scores": {
         "v2": {
-          "final_score": 84.6,
-          "llm_norm": 0.81,
-          "structural_passed": 18,
-          "mean_agreement": 1.0,
-          "dims": {
-            "mandate_relevance": 4,
-            "data_grounding": 4,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 5,
-            "action_specificity": 5,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": false
-          }
+          "final_score": 84.6
         }
       }
     },
@@ -180,397 +134,58 @@
   ],
   "autorubric_eval_history": [
     {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13_1053.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_0843.md",
-        "v1": "brief_v1_2026-07-13_0853.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 81.8,
-          "llm_score": 0.818,
-          "mean_agreement": 0.85,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": false,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          }
-        }
-      }
-    },
-    {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_0905.md",
-        "v1": "brief_v1_2026-07-13_0853.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 86.4,
-          "llm_score": 0.864,
-          "mean_agreement": 0.875,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 4,
-            "action_specificity": 3,
-            "data_integrity": 5,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        },
-        "v1": {
-          "final_score": 68.8,
-          "llm_score": 0.688,
-          "mean_agreement": 0.75,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": false,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 4,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 5,
-            "action_specificity": 5,
-            "data_integrity": 4,
-            "trend_continuity": 3
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "general": {
-          "final_score": 9.7,
-          "llm_score": 0.097,
-          "mean_agreement": 0.775,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 4,
-            "data_grounding": 3,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 3,
-            "action_specificity": 1,
-            "data_integrity": 1,
-            "trend_continuity": 2
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        }
-      },
-      "deltas": {
-        "v2_vs_v1": 17.6,
-        "v2_vs_gen": 76.7,
-        "v1_vs_gen": 59.1
-      }
-    },
-    {
-      "eval_date": "2026-07-13",
-      "framework": "autorubric",
-      "report_path": "outputs/eval_autorubric_2026-07-13.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-13_1005.md",
-        "v1": "brief_v1_2026-07-13_0853.md",
-        "general": "brief_general_2026-06-17.md"
-      },
-      "scores": {
-        "v2": {
-          "final_score": 93.2,
-          "llm_score": 0.932,
-          "mean_agreement": 0.875,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 4,
-            "action_specificity": 3,
-            "data_integrity": 4,
-            "trend_continuity": 5
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": false
-          }
-        },
-        "v1": {
-          "final_score": 64.8,
-          "llm_score": 0.648,
-          "mean_agreement": 0.75,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": false,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 3,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 5,
-            "action_specificity": 4,
-            "data_integrity": 4,
-            "trend_continuity": 3
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "general": {
-          "final_score": 14.2,
-          "llm_score": 0.142,
-          "mean_agreement": 0.75,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 3,
-            "data_grounding": 4,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 3,
-            "action_specificity": 1,
-            "data_integrity": 4,
-            "trend_continuity": 2
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
-        }
-      },
-      "deltas": {
-        "v2_vs_v1": 28.4,
-        "v2_vs_gen": 79.0,
-        "v1_vs_gen": 50.6
-      }
-    },
-    {
       "eval_date": "2026-07-14",
       "framework": "autorubric",
       "report_path": "outputs/eval_autorubric_2026-07-14.md",
-      "judges": [
-        "openrouter/anthropic/claude-haiku-4-5",
-        "openrouter/google/gemini-2.5-flash"
-      ],
-      "ensemble": true,
-      "briefs": {
-        "v2": "brief_v2_2026-07-14_1030.md",
-        "v1": "brief_v1_2026-07-13_0853.md",
-        "general": "brief_general_2026-06-17.md"
-      },
       "scores": {
         "v2": {
           "final_score": 75.6,
-          "llm_score": 0.756,
-          "mean_agreement": 0.8,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": true
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 3,
-            "action_specificity": 3,
-            "data_integrity": 3,
-            "trend_continuity": 5
-          },
           "penalties": {
-            "generic_market_commentary": false,
             "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "v1": {
-          "final_score": 61.4,
-          "llm_score": 0.614,
-          "mean_agreement": 0.75,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": false,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 3,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 4,
-            "action_specificity": 4,
-            "data_integrity": 3,
-            "trend_continuity": 3
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": true,
-            "unsupported_number": true
-          }
-        },
-        "general": {
-          "final_score": 13.6,
-          "llm_score": 0.136,
-          "mean_agreement": 0.725,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": false,
-            "watch_list_specific": false,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 4,
-            "data_grounding": 4,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 3,
-            "action_specificity": 1,
-            "data_integrity": 1,
-            "trend_continuity": 3
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
             "unsupported_number": true
           }
         }
-      },
-      "deltas": {
-        "v2_vs_v1": 14.2,
-        "v2_vs_gen": 61.9,
-        "v1_vs_gen": 47.7
+      }
+    },
+    {
+      "eval_date": "2026-07-13",
+      "framework": "autorubric",
+      "report_path": "outputs/eval_autorubric_2026-07-13_1053.md",
+      "scores": {
+        "v2": {
+          "final_score": 81.8
+        }
+      }
+    },
+    {
+      "eval_date": "2026-07-13",
+      "framework": "autorubric",
+      "report_path": "outputs/eval_autorubric_2026-07-13.md",
+      "scores": {
+        "v2": {
+          "final_score": 93.2
+        }
       }
     }
   ],
   "claude_md_patches_applied": [
     {
+      "date": "2026-07-14",
+      "dimension": "unsupported_number",
+      "score": "PENALTY",
+      "patch": "Every material figure must trace to a shown calculation block or named source. Compute each derived quantity ONCE in a calculation block, label precisely what each represents, and reuse exact numbers everywhere. Three oil-fiscal figures labelled [A], [B], [C] with distinct bases. Key number and headline must be internally consistent."
+    },
+    {
       "date": "2026-07-13",
       "dimension": "peg_chain_traced",
       "score": "FAIL",
-      "patch": "AED/USD peg transmission chain must appear as one explicit connected arrow-chain sentence in every brief. Use literal form: Fed [action] at X.XX% \u2192 CBUAE mirrors at X.XX% \u2192 EIBOR 3M at X.XX% \u2192 EDB floating-rate portfolio at EIBOR+200bps = X.XX% \u2192 SME quarterly debt service [impact]. Non-droppable element of Type A on every run."
+      "patch": "AED/USD peg transmission chain must appear as one explicit connected arrow-chain sentence in every brief. Non-droppable element of Type A on every run."
     },
     {
       "date": "2026-07-13",
       "dimension": "silent_stale_or_estimated_data",
       "score": "PENALTY",
-      "patch": "Tag every inline use of estimated EIBOR with (est.) directly next to the figure in every scenario line of the calculation block, not just once at the top. EIBOR source line must be first line of calculation block."
+      "patch": "Tag every inline use of estimated EIBOR with (est.) directly next to the figure in every scenario line of the calculation block. EIBOR source line must be first line of calculation block."
     },
     {
       "date": "2026-07-01",

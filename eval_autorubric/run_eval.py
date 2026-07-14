@@ -30,13 +30,86 @@ load_dotenv(ROOT / ".env")
 
 from eval_autorubric.report import format_report      # noqa: E402
 from eval_autorubric.runner import grade_all           # noqa: E402
+from eval.rubric import LLM_DIMENSIONS                 # noqa: E402
 
 OUTPUTS = ROOT / "outputs"
 STATE_PATH = OUTPUTS / "state.json"
+CLAUDE_MD = ROOT / "CLAUDE.md"
+
+_DIM_NAME = {d["id"]: d["name"] for d in LLM_DIMENSIONS}
+
+# Targeted fix guidance per anti-pattern, appended to CLAUDE.md when the penalty fires.
+_PENALTY_FIX = {
+    "unsupported_number": (
+        "Every material figure (rate, price, AED amount, %) must trace to a shown calculation "
+        "block or a named source. Compute each derived quantity ONCE and reuse that exact number "
+        "everywhere (headline, Key number, matrix, Type B). When reporting more than one framing "
+        "of a quantity, label precisely what each represents (uplift vs pre-crisis / total surplus "
+        "above breakeven / single-session change) — different framings are different numbers, each "
+        "needing its own labelled calc line. Never let the headline and Key number quote different "
+        "AED figures for what a reader will take to be the same thing."
+    ),
+    "silent_stale_or_estimated_data": (
+        "Tag every estimated or stale figure (especially EIBOR) with '(est.)' or a stale flag at "
+        "EVERY point of use, adjacent to the number — not only once in Methodology. Every scenario "
+        "line (base / +25bps / −25bps / −50bps) must carry the flag."
+    ),
+    "generic_market_commentary": (
+        "Tie every signal explicitly to one of the five EDB priority sectors or the AED/USD peg "
+        "chain. Cut any broad market colour that has no EDB/sector implication."
+    ),
+}
+
+
+def _patch_claude_md(v2: dict, date_str: str) -> list[str]:
+    """Self-improvement loop: idempotently append improvement notes to CLAUDE.md for the
+    anti-patterns that fired on v2 and any genuinely-weak dimension (≤ 2/5). Each note is
+    keyed by an `<!-- auto:... -->` marker so a lesson the agent already has is not re-added
+    (re-recording an existing rule doesn't help). Dimensions at exactly 3/5 are skipped: on
+    this rubric a glowing free-text reason often still lands on the middle 'Adequate' option
+    (a scoring artifact), so 3/5 is too noisy to auto-patch — only ≤ 2 is a clear signal."""
+    if not CLAUDE_MD.exists():
+        return []
+    md = CLAUDE_MD.read_text()
+    reasons = v2.get("reasons", {}) or {}
+    additions, added = [], []
+
+    for pid, fired in (v2.get("penalties") or {}).items():
+        marker = f"<!-- auto:penalty:{pid} -->"
+        if not fired or marker in md:
+            continue
+        reason = (reasons.get(pid, "") or "").strip()[:400]
+        fix = _PENALTY_FIX.get(pid, "Address the anti-pattern the judge cited.")
+        additions.append(
+            f"\n\n### {date_str} — {pid} (AutoRubric CI: penalty fired) {marker}\n"
+            f"- **Observed:** {reason}\n- **Fix:** {fix}"
+        )
+        added.append(f"penalty:{pid}")
+
+    for did, lvl in (v2.get("dims") or {}).items():
+        marker = f"<!-- auto:dim:{did} -->"
+        if lvl is None or lvl > 2 or marker in md:
+            continue
+        reason = (reasons.get(did, "") or "").strip()[:400]
+        name = _DIM_NAME.get(did, did)
+        additions.append(
+            f"\n\n### {date_str} — {name} (AutoRubric CI: {lvl}/5) {marker}\n"
+            f"- **Observed:** {reason}\n"
+            f"- **Fix:** Strengthen this dimension per its behavioural anchors; a ≤2/5 is a "
+            f"concrete deficiency, not a scoring artifact."
+        )
+        added.append(f"dim:{did}")
+
+    if additions:
+        CLAUDE_MD.write_text(md + "".join(additions) + "\n")
+    return added
 
 
 def _latest(pattern: str) -> Path | None:
-    matches = sorted(OUTPUTS.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True)
+    # Sort by filename, not mtime: brief_v{N}_YYYY-MM-DD_HHMM.md sorts chronologically by
+    # name, and this is stable in CI (a fresh git checkout gives every file an equal mtime,
+    # so mtime-based selection could grade an older brief).
+    matches = sorted(OUTPUTS.glob(pattern), key=lambda p: p.name, reverse=True)
     return matches[0] if matches else None
 
 
@@ -63,6 +136,9 @@ async def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--v2"); ap.add_argument("--v1"); ap.add_argument("--general")
     ap.add_argument("--no-state", action="store_true", help="skip state.json update")
+    ap.add_argument("--patch-claude-md", action="store_true",
+                    help="close the self-improvement loop: append notes to CLAUDE.md for "
+                         "penalties that fired on v2 and dimensions scoring ≤ 2/5 (idempotent)")
     args = ap.parse_args()
 
     paths = _resolve_briefs(args)
@@ -108,6 +184,13 @@ async def main() -> None:
     }
     if not args.no_state:
         _update_state(record)
+
+    if args.patch_claude_md and "v2" in results:
+        added = _patch_claude_md(results["v2"], date_str)
+        if added:
+            print(f"CLAUDE.md self-improvement: added notes for {', '.join(added)}", flush=True)
+        else:
+            print("CLAUDE.md self-improvement: no new lessons (clean run or already recorded)", flush=True)
 
     print(f"\nReport written: {report_path.relative_to(ROOT)}", flush=True)
     for t, r in results.items():

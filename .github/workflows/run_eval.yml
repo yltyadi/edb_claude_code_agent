@@ -53,13 +53,14 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           AUTORUBRIC_JUDGES: ${{ vars.AUTORUBRIC_JUDGES || 'openrouter/anthropic/claude-haiku-4-5,openrouter/google/gemini-2.5-flash' }}
-        run: python -m eval_autorubric.run_eval
+        # --patch-claude-md closes the self-improvement loop (idempotent CLAUDE.md notes).
+        run: python -m eval_autorubric.run_eval --patch-claude-md
 
       - name: Commit outputs to repository
         run: |
           git config user.name  "EDB Macro Agent"
           git config user.email "agent@edb-macro.ai"
-          git add outputs/
+          git add outputs/ CLAUDE.md   # CLAUDE.md may gain self-improvement notes from the eval
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else

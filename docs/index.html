@@ -451,7 +451,16 @@
   let STATE = null;
   async function getState() {
     if (STATE) return STATE;
-    const resp = await fetch(`${GH_RAW}/outputs/state.json`, { cache: 'no-store' });
+    // state.json is a mutable file at a fixed path, so the raw.githubusercontent CDN
+    // caches it (~5 min) and serves stale data — the dashboard would lag behind a fresh
+    // eval. The GitHub API contents endpoint reflects the latest commit immediately.
+    let resp = await fetch(`${GH_API}/contents/outputs/state.json`, {
+      headers: { 'Accept': 'application/vnd.github.raw' }, cache: 'no-store',
+    });
+    if (!resp.ok) {
+      // Fallback to the raw CDN with a cache-buster if the API is unavailable / rate-limited.
+      resp = await fetch(`${GH_RAW}/outputs/state.json?t=${Date.now()}`, { cache: 'no-store' });
+    }
     if (!resp.ok) throw new Error(`state.json ${resp.status}`);
     STATE = await resp.json();
     return STATE;
