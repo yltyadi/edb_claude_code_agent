@@ -6,12 +6,16 @@
 FROM python:3.11-slim
 
 # ── System deps + Node 20 (for the Claude Code CLI) ───────────────────────────
+# Trimmed to reduce final image size: strip apt/npm caches, docs, and man pages
+# after install — none of it is needed at runtime.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl ca-certificates git \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
-    && npm install -g @anthropic-ai/claude-code \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && npm install -g @anthropic-ai/claude-code --no-audit --no-fund \
+    && npm cache clean --force \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /root/.npm /tmp/* /usr/share/doc/* /usr/share/man/*
 
 # HF Spaces run as a non-root user with UID 1000.
 RUN useradd -m -u 1000 user
