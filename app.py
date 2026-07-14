@@ -87,6 +87,41 @@ def gh_put(path: str, content: str, sha, message: str) -> bool:
                      json=payload, timeout=20)
     return r.status_code in (200, 201)
 
+def gh_open_issue(title: str, body: str) -> tuple[bool, object]:
+    """Create a GitHub issue to trigger the matching Actions workflow.
+
+    The Space is a trigger-and-view frontend: all compute (brief generation, evals)
+    runs in GitHub Actions — where Node + the Claude Agent SDK are available — not on
+    the Python-only Space. Each workflow fires on an issue with a specific title.
+    Returns (ok, issue_number_or_error_message).
+    """
+    if not _GITHUB_TOKEN or not _GITHUB_REPO:
+        return False, "GITHUB_TOKEN / GITHUB_REPO not set in Space secrets."
+    r = requests.post(
+        f"https://api.github.com/repos/{_GITHUB_REPO}/issues",
+        headers={**_gh_headers(), "Content-Type": "application/json"},
+        json={"title": title, "body": body}, timeout=20,
+    )
+    if r.status_code in (200, 201):
+        return True, r.json().get("number")
+    return False, f"HTTP {r.status_code}: {r.text[:200]}"
+
+
+def _trigger_and_report(title: str, body: str, workflow_file: str, what: str, eta: str):
+    """Shared handler: open the trigger issue and yield a status message + no viewer change."""
+    ok, res = gh_open_issue(title, body)
+    actions = f"https://github.com/{_GITHUB_REPO}/actions/workflows/{workflow_file}"
+    if not ok:
+        return f"❌ Could not trigger {what}: {res}", gr.update()
+    return (
+        f"🚀 Triggered **{what}** in GitHub Actions (issue #{res}).\n\n"
+        f"It runs on a full Node + Claude Agent SDK runner and commits the result "
+        f"to the repo when done ({eta}).\n\n"
+        f"• Watch progress: {actions}\n"
+        f"• When it finishes, click 🔄 to refresh — the new output loads from GitHub."
+    ), gr.update()
+
+
 def _list_outputs(pattern: str) -> list:
     r = requests.get(f"https://api.github.com/repos/{_GITHUB_REPO}/contents/outputs",
                      headers=_gh_headers(), timeout=15)
@@ -136,62 +171,17 @@ def _push_run(brief_path: str, date: str) -> bool:
     return ok
 
 def run_brief():
-    if not _GITHUB_TOKEN:
-        yield "❌ `GITHUB_TOKEN` not set in Space secrets.", ""
-        return
-    if not _GITHUB_REPO:
-        yield "❌ `GITHUB_REPO` not set in Space secrets.", ""
-        return
-
-    log = "🔄 Syncing state.json from GitHub…\n"
-    yield log, ""
-    try:
-        _sync_state()
-        log += "✅ State synced.\n\n"
-    except Exception as e:
-        log += f"⚠️ State sync failed (proceeding anyway): {e}\n\n"
-    yield log, ""
-
-    # USE_AGENT_SDK=1 runs the Claude Agent SDK runner (real code execution via Bash,
-    # routed to OpenRouter). Default stays on the legacy hand-rolled loop for instant
-    # rollback. Both write to outputs/ and emit the same SUMMARY_JSON contract.
-    use_sdk = os.environ.get("USE_AGENT_SDK", "").strip() in ("1", "true", "True")
-    runner = "run_agent_sdk.py" if use_sdk else "run_agent.py"
-    log += f"🚀 Running EDB agent ({runner}) — takes ~2–5 minutes…\n"
-    yield log, ""
-
-    proc = subprocess.Popen(
-        ["python", runner],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        text=True, bufsize=1, env={**os.environ},
+    # Triggers the Claude Agent SDK generation workflow in GitHub Actions (the Space
+    # itself has no Node/CLI, so it can't run the SDK locally). CI generates the brief
+    # and commits it; refresh the dropdown to view it.
+    yield _trigger_and_report(
+        title="Generate Brief",
+        body="Triggered from the Hugging Face Space. Runs run_agent_sdk.py (Claude Agent SDK) "
+             "in GitHub Actions and commits the brief to outputs/.",
+        workflow_file="generate_brief.yml",
+        what="the SDK brief generation",
+        eta="~3–6 min",
     )
-    for line in proc.stdout:
-        log += line
-        yield log, ""
-    proc.wait()
-
-    if proc.returncode != 0:
-        yield log + "\n❌ Agent exited with a non-zero code.", ""
-        return
-
-    summary = None
-    for line in log.splitlines():
-        if line.startswith("SUMMARY_JSON="):
-            try:
-                summary = json.loads(line[len("SUMMARY_JSON="):])
-            except Exception:
-                pass
-
-    if not summary or not Path(summary.get("brief_path", "")).exists():
-        yield log + "\n❌ Brief file not found after run.", ""
-        return
-
-    log += f"\n📤 Committing `{summary['brief_name']}` to GitHub…\n"
-    yield log, ""
-
-    ok = _push_run(summary["brief_path"], summary["date"])
-    log += "✅ Committed.\n" if ok else "⚠️ Commit failed — check GITHUB_TOKEN has `repo` scope.\n"
-    yield log, Path(summary["brief_path"]).read_text()
 
 def refresh_brief_dropdown():
     briefs = list_briefs()
@@ -202,52 +192,6 @@ def load_brief(name: str) -> str:
         return ""
     content, _ = gh_get(f"outputs/{name}")
     return content or f"*(Could not load `{name}` from GitHub.)*"
-
-# ── Tab 1 — Streaming chat ────────────────────────────────────────────────────
-
-def chat_fn(message: str, history: list, brief_content: str):
-    """Streaming chat about the current brief. history is Gradio 5 messages format (list of dicts)."""
-    if not brief_content or len(brief_content.strip()) < 50:
-        yield history + [
-            {"role": "user", "content": message},
-            {"role": "assistant", "content": "Please load or generate a brief first."},
-        ]
-        return
-    if not _OR_KEY:
-        yield history + [
-            {"role": "user", "content": message},
-            {"role": "assistant", "content": "❌ OPENROUTER_API_KEY not set in Space secrets."},
-        ]
-        return
-
-    client = _client(CHAT_MODEL)
-    llm_messages = [
-        {"role": "system", "content": (
-            "You are an EDB (Emirates Development Bank) senior macro analyst. "
-            "Answer questions concisely and precisely based solely on the brief below. "
-            "Cite specific numbers from the brief when relevant. "
-            "Do not speculate beyond what the brief says.\n\n"
-            f"BRIEF:\n{brief_content[:7000]}"
-        )},
-    ]
-    # history is [{role: "user"|"assistant", content: "..."}]
-    for msg in history:
-        llm_messages.append({"role": msg["role"], "content": msg["content"]})
-    llm_messages.append({"role": "user", "content": message})
-
-    stream = client.chat.completions.create(
-        model=CHAT_MODEL, messages=llm_messages, max_tokens=600, temperature=0.2, stream=True,
-    )
-
-    partial = ""
-    new_history = history + [
-        {"role": "user", "content": message},
-        {"role": "assistant", "content": ""},
-    ]
-    for chunk in stream:
-        partial += chunk.choices[0].delta.content or ""
-        new_history[-1]["content"] = partial
-        yield new_history
 
 # ── Tab 2 — Evaluation ────────────────────────────────────────────────────────
 
@@ -402,89 +346,16 @@ def _format_eval_report(
 """
 
 def run_eval():
-    if not _GITHUB_TOKEN or not _GITHUB_REPO:
-        yield "❌ GITHUB_TOKEN or GITHUB_REPO not set.", ""
-        return
-    if not _OR_KEY:
-        yield "❌ OPENROUTER_API_KEY not set — needed for LLM judging.", ""
-        return
-
-    log = "🔍 Fetching brief list from GitHub…\n"
-    yield log, ""
-
-    all_files = _list_outputs(r"brief_.*\.md")
-    v2_name  = next((f for f in all_files if re.match(r"brief_v2_", f)), None)
-    v1_name  = next((f for f in all_files if re.match(r"brief_v1_", f)), None)
-    gen_name = next((f for f in all_files if re.match(r"brief_general_", f)), None)
-
-    log += f"  v2:  {v2_name or '(not found)'}\n"
-    log += f"  v1:  {v1_name or '(not found)'}\n"
-    log += f"  gen: {gen_name or '(not found)'}\n\n"
-    yield log, ""
-
-    if not v2_name:
-        yield log + "❌ No v2 brief found. Generate a brief first.", ""
-        return
-
-    log += "📥 Fetching brief content from GitHub…\n"
-    yield log, ""
-
-    v2_content,  _ = gh_get(f"outputs/{v2_name}")
-    v1_content,  _ = gh_get(f"outputs/{v1_name}")  if v1_name  else (None, None)
-    gen_content, _ = gh_get(f"outputs/{gen_name}") if gen_name else (None, None)
-
-    log += "🔢 Running 20 automated checks…\n"
-    yield log, ""
-
-    v2_checks  = _run_auto_checks(v2_content)
-    v1_checks  = _run_auto_checks(v1_content)
-    gen_checks = _run_auto_checks(gen_content)
-
-    passed = sum(v2_checks.values())
-    log += f"  v2: {passed}/20 automated checks passed\n\n"
-    yield log, ""
-
-    log += "🤖 Calling LLM to judge 7 dimensions × 3 briefs (one API call)…\n"
-    yield log, ""
-
-    prompt = _build_eval_prompt(
-        v2_content or "", v1_content or "", gen_content or ""
+    # Triggers the Legacy evaluation workflow in GitHub Actions (deliberate, button-only —
+    # not on the daily schedule). CI runs the 20 checks + one LLM-judge call and commits.
+    yield _trigger_and_report(
+        title="Run Legacy Eval",
+        body="Triggered from the Hugging Face Space. Runs eval/run_eval.py (legacy framework: "
+             "20 checks + one-call LLM judging) in GitHub Actions and commits the report.",
+        workflow_file="run_legacy_eval.yml",
+        what="the Legacy evaluation",
+        eta="~1–2 min",
     )
-    client = _client(MODEL)
-    try:
-        resp = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=1500,
-            temperature=0.1,
-        )
-        raw = resp.choices[0].message.content.strip()
-        # strip markdown code fences if present
-        raw = re.sub(r"^```(?:json)?\s*", "", raw)
-        raw = re.sub(r"\s*```$", "", raw)
-        llm_scores = json.loads(raw)
-        log += "✅ LLM judging complete.\n\n"
-    except Exception as e:
-        log += f"⚠️ LLM judging failed: {e}\nShowing automated checks only.\n\n"
-        llm_scores = {}
-    yield log, ""
-
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    report = _format_eval_report(
-        date_str, v2_name, v1_name or "", gen_name or "",
-        v2_checks, v1_checks, gen_checks, llm_scores,
-    )
-
-    log += "📤 Committing eval report to GitHub…\n"
-    yield log, ""
-
-    report_name = f"eval_{date_str}.md"
-    _, existing_sha = gh_get(f"outputs/{report_name}")
-    ok = gh_put(f"outputs/{report_name}", report, existing_sha,
-                f"eval: {date_str} [HF Spaces]")
-    log += f"✅ Committed `{report_name}`.\n" if ok else "⚠️ Commit failed.\n"
-    yield log, report
-
 def refresh_eval_dropdown():
     evals = list_evals()
     return gr.Dropdown(choices=evals, value=evals[0] if evals else None)
@@ -511,101 +382,16 @@ def load_autorubric_eval(name: str) -> str:
     return content or f"*(Could not load `{name}`.)*"
 
 def run_autorubric_eval():
-    """Fetch latest briefs, grade with the AutoRubric engine, commit report + state."""
-    if not _GITHUB_TOKEN or not _GITHUB_REPO:
-        yield "❌ GITHUB_TOKEN or GITHUB_REPO not set.", ""
-        return
-    if not _OR_KEY:
-        yield "❌ OPENROUTER_API_KEY not set — needed for LLM judging.", ""
-        return
-    try:
-        from eval_autorubric.runner import grade_all
-        from eval_autorubric.report import format_report
-        from eval_autorubric.config import judge_models
-        from autorubric.rate_limit import RateLimitPool
-    except Exception as e:
-        yield f"❌ AutoRubric engine import failed: {e}", ""
-        return
-
-    log = "🔍 Fetching latest briefs from GitHub…\n"
-    yield log, ""
-
-    all_files = _list_outputs(r"brief_.*\.md")
-    names = {
-        "v2":      next((f for f in all_files if re.match(r"brief_v2_", f)), None),
-        "v1":      next((f for f in all_files if re.match(r"brief_v1_", f)), None),
-        "general": next((f for f in all_files if re.match(r"brief_general_", f)), None),
-    }
-    for t, n in names.items():
-        log += f"  {t:<8}: {n or '(not found)'}\n"
-    yield log, ""
-
-    if not names["v2"]:
-        yield log + "❌ No v2 brief found. Generate a brief first.", ""
-        return
-
-    briefs = {t: (gh_get(f"outputs/{n}")[0] if n else None) for t, n in names.items()}
-    disp_names = {t: (n or "(none)") for t, n in names.items()}
-
-    judges = judge_models()
-    ensemble = len(judges) >= 2
-    log += (f"\n🤖 Grading atomically with {'ensemble of ' + str(len(judges)) if ensemble else 'single judge'} "
-            f"({', '.join(j.split('/')[-1] for j in judges)})…\n"
-            f"   One LLM call per criterion per brief — ~1–2 min.\n")
-    yield log, ""
-
-    try:
-        # RateLimitPool is a process-wide singleton whose semaphores/locks bind to
-        # whichever event loop first touches them. This app's process stays alive
-        # across requests while each click opens a fresh loop via asyncio.run(), so
-        # a pool populated by an earlier click is bound to an already-closed loop —
-        # every judge call then fails with "Semaphore ... bound to a different event
-        # loop" and every criterion silently scores 0. Reset before each run so the
-        # pool is rebuilt fresh inside the loop that's actually going to use it.
-        RateLimitPool.reset_instance()
-        graded = asyncio.run(grade_all(briefs, judges))
-    except Exception as e:
-        yield log + f"\n❌ Grading failed: {e}", ""
-        return
-
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    report = format_report(graded, date_str, disp_names)
-
-    scores = {t: round(r["final_score"], 1) for t, r in graded["results"].items()}
-    log += f"✅ Scored: {scores}\n\n📤 Committing report + state to GitHub…\n"
-    yield log, ""
-
-    report_name = f"eval_autorubric_{date_str}.md"
-    _, existing_sha = gh_get(f"outputs/{report_name}")
-    ok = gh_put(f"outputs/{report_name}", report, existing_sha,
-                f"eval-autorubric: {date_str} [HF Spaces]")
-
-    # append to state.json → autorubric_eval_history (separate from legacy history)
-    try:
-        state_raw, s_sha = gh_get("outputs/state.json")
-        state = json.loads(state_raw) if state_raw else {}
-        record = {
-            "eval_date": date_str, "framework": "autorubric",
-            "report_path": f"outputs/{report_name}", "judges": judges,
-            "ensemble": ensemble, "briefs": disp_names,
-            "scores": {t: {"final_score": round(r["final_score"], 1),
-                           "llm_score": round(r["llm_score"], 3),
-                           "mean_agreement": r["mean_agreement"],
-                           "binary": r["binary"],
-                           "dims": r["dims"],
-                           "penalties": r["penalties"]}
-                       for t, r in graded["results"].items()},
-            "deltas": {k: round(v, 1) for k, v in graded["deltas"].items()},
-        }
-        state.setdefault("autorubric_eval_history", []).append(record)
-        gh_put("outputs/state.json", json.dumps(state, indent=2, default=str), s_sha,
-               f"state (autorubric eval): {date_str} [HF Spaces]")
-    except Exception as e:
-        log += f"⚠️ state.json update skipped: {e}\n"
-
-    log += f"✅ Committed `{report_name}`.\n" if ok else "⚠️ Report commit failed.\n"
-    yield log, report
-
+    # Triggers the AutoRubric evaluation workflow in GitHub Actions (also closes the
+    # CLAUDE.md self-improvement loop via --patch-claude-md). CI grades + commits.
+    yield _trigger_and_report(
+        title="Run AutoRubric Eval",
+        body="Triggered from the Hugging Face Space. Runs the AutoRubric ensemble eval in "
+             "GitHub Actions and commits the report + updated state.json.",
+        workflow_file="run_eval.yml",
+        what="the AutoRubric evaluation",
+        eta="~2–3 min",
+    )
 def _latest_autorubric_eval():
     """Return the most recent autorubric_eval_history entry, or None."""
     try:
@@ -902,9 +688,6 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
         "*Emirates Development Bank — Daily Macro Brief Pipeline*"
     )
 
-    # Shared state: current brief text (used by both tab 1 viewer and chat)
-    brief_state = gr.State("")
-
     with gr.Tabs():
 
         # ── Tab 1: Daily Brief ──────────────────────────────────────────────
@@ -913,18 +696,21 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
                 # Left: generate + log
                 with gr.Column(scale=1, min_width=300):
                     run_btn = gr.Button("▶  Generate New Brief", variant="primary", size="lg")
-                    gr.Markdown("*~2–3 minutes. Streams live.*")
+                    gr.Markdown(
+                        "*Runs the Claude Agent SDK in GitHub Actions (~3–6 min). "
+                        "Click 🔄 to load the new brief when it finishes.*"
+                    )
                     log_out = gr.Textbox(
-                        label="Agent log", lines=18, max_lines=35,
+                        label="Trigger status", lines=10, max_lines=20,
                         interactive=False, show_copy_button=True,
-                        placeholder="Click 'Generate New Brief' to start…",
+                        placeholder="Click 'Generate New Brief' to trigger a run…",
                     )
 
                 # Right: brief viewer
                 with gr.Column(scale=2):
                     with gr.Row():
                         brief_dropdown = gr.Dropdown(
-                            label="Browse past briefs", choices=[],
+                            label="Browse briefs (from GitHub)", choices=[],
                             interactive=True, scale=5,
                         )
                         refresh_btn = gr.Button("🔄", scale=0)
@@ -932,44 +718,15 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
                         value="*Select a brief from the dropdown, or generate a new one.*"
                     )
 
-            gr.Markdown("---\n### Ask questions about this brief")
-            gr.Markdown(
-                "*Load a brief (generate or select from dropdown), then ask anything. "
-                "Answers are grounded in the brief content only.*"
-            )
-            chatbot = gr.Chatbot(label="Brief Q&A", height=350, type="messages")
-            with gr.Row():
-                chat_input = gr.Textbox(
-                    placeholder="e.g. 'What is the EIBOR impact on a AED 5M loan?' or 'Summarise the sector matrix'",
-                    label="", scale=5, lines=1,
-                )
-                chat_send = gr.Button("Send", variant="primary", scale=0)
-
-            # Wiring: brief generation
+            # Wiring: brief generation (triggers CI, then refresh the dropdown)
             run_btn.click(
                 fn=run_brief, inputs=[], outputs=[log_out, brief_out], api_name=False,
-            ).then(
-                fn=lambda brief: brief, inputs=[brief_out], outputs=[brief_state], api_name=False,
             )
 
             # Wiring: dropdown browse
             refresh_btn.click(fn=refresh_brief_dropdown, outputs=[brief_dropdown], api_name=False)
             brief_dropdown.change(
                 fn=load_brief, inputs=[brief_dropdown], outputs=[brief_out], api_name=False,
-            ).then(
-                fn=lambda brief: brief, inputs=[brief_out], outputs=[brief_state], api_name=False,
-            )
-
-            # Wiring: chat
-            chat_send.click(
-                fn=chat_fn, inputs=[chat_input, chatbot, brief_state], outputs=[chatbot], api_name=False,
-            ).then(
-                fn=lambda: "", outputs=[chat_input], api_name=False,
-            )
-            chat_input.submit(
-                fn=chat_fn, inputs=[chat_input, chatbot, brief_state], outputs=[chatbot], api_name=False,
-            ).then(
-                fn=lambda: "", outputs=[chat_input], api_name=False,
             )
 
             # On load: populate dropdown
@@ -987,8 +744,9 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
 
             with gr.Accordion("▶  Run a new evaluation", open=False):
                 gr.Markdown(
-                    "Fetches the latest v2 / v1 / general briefs, runs 20 regex checks + "
-                    "one LLM call scoring all 7 dimensions. Takes ~45 seconds."
+                    "Triggers the Legacy evaluation in GitHub Actions (20 regex checks + one "
+                    "LLM call scoring all 7 dimensions), which commits the report. ~1–2 min; "
+                    "click 🔄 to refresh when done."
                 )
                 eval_btn = gr.Button("Run Legacy Eval", variant="primary")
                 eval_log = gr.Textbox(
@@ -1035,9 +793,9 @@ with gr.Blocks(title="EDB Macro Intelligence Agent", theme=gr.themes.Base()) as 
 
             with gr.Accordion("▶  Run a new evaluation", open=False):
                 gr.Markdown(
-                    "Fetches the latest v2 / v1 / general briefs from GitHub, grades every "
-                    "criterion atomically with the 2-model ensemble, then commits the report "
-                    "and updates the comparison chart. Takes ~2–3 min."
+                    "Triggers the AutoRubric evaluation in GitHub Actions — grades every "
+                    "criterion atomically with the 2-model ensemble, commits the report, and "
+                    "updates state.json. ~2–3 min; click 🔄 to refresh when done."
                 )
                 ar_btn = gr.Button("Run AutoRubric Eval", variant="primary")
                 ar_log = gr.Textbox(
