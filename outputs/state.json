@@ -28,20 +28,20 @@
     "uae_fdi_inflows_usd_bn": 45.6,
     "uae_cpi_inflation_pct": 1.25,
     "notes": {
-      "eibor": "3.900% (est.) as of July 10 2026 (last live CBUAE confirmation); CBUAE base rate 3.65% confirmed July 13; CBUAE tool returned null July 14 — state.json fallback; EIBOR-base spread 25bps; 5 consecutive unchanged days (streak began July 10)",
-      "brent": "July 14 2026: $87.09 (TradingEconomics); OilPrice.com $87.06 corroborates. +4.5% session. +$17.53/bbl vs pre-Hormuz FRED close $69.56. FRED July 6 $69.56 stale — overridden. Hormuz Day 135 escalation: IRGC ballistic strikes Jordan US base + two supertankers. Crisis pressure index 90 (Extreme).",
-      "wti": "July 14 TradingEconomics $80.84 (+3.45% session). FRED July 6 $69.60 stale — overridden.",
+      "eibor": "3.900% (est.) as of July 10 2026 (last live CBUAE confirmation); CBUAE base rate 3.65% confirmed July 13; CBUAE tool returned null July 14 \u2014 state.json fallback; EIBOR-base spread 25bps; 5 consecutive unchanged days (streak began July 10)",
+      "brent": "July 14 2026: $87.09 (TradingEconomics); OilPrice.com $87.06 corroborates. +4.5% session. +$17.53/bbl vs pre-Hormuz FRED close $69.56. FRED July 6 $69.56 stale \u2014 overridden. Hormuz Day 135 escalation: IRGC ballistic strikes Jordan US base + two supertankers. Crisis pressure index 90 (Extreme).",
+      "wti": "July 14 TradingEconomics $80.84 (+3.45% session). FRED July 6 $69.60 stale \u2014 overridden.",
       "hormuz": "Day 135 of formal closure. IRGC ballistic missile strikes on US base in Jordan + two supertankers in strait (July 14). 34 ships/day vs 88 normal (39% throughput). War-risk insurance 8x. Crisis index 90 (Extreme). Escalation forecast 65 (High). Polymarket 3% odds normal traffic by July 31. ADNOC Fujairah bypass 1.5 mb/d (~50% UAE export coverage). Ceasefire collapsed July 8. Iran-Oman talks paused.",
       "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production 3.8 mb/d (Reuters July 6 2026). Targeting 5 mb/d by 2031.",
-      "make_it_in_emirates": "AED 180bn industrial procurement opportunities (Make it in the Emirates 2026). 20% conversion = AED 7.2bn/yr additional pace — closes the AED 6.6bn/yr deficit.",
-      "fed": "June 17 FOMC — 5th consecutive hold; Fed Funds 3.50–3.75%. July 2026: no rate change (pre-July 29 FOMC). July 29 FOMC upcoming — 25% hike probability. June CPI due July 14 (8:30 ET = 12:30 UTC). FEDFUNDS 3.63% (June, 43 days stale — assumed unchanged). TradingEconomics confirms 3.75% current.",
+      "make_it_in_emirates": "AED 180bn industrial procurement opportunities (Make it in the Emirates 2026). 20% conversion = AED 7.2bn/yr additional pace \u2014 closes the AED 6.6bn/yr deficit.",
+      "fed": "June 17 FOMC \u2014 5th consecutive hold; Fed Funds 3.50\u20133.75%. July 2026: no rate change (pre-July 29 FOMC). July 29 FOMC upcoming \u2014 25% hike probability. June CPI due July 14 (8:30 ET = 12:30 UTC). FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged). TradingEconomics confirms 3.75% current.",
       "cbuae": "3.65% confirmed July 13 2026. CBUAE tool returned null July 14 (web fallback failed). State.json baseline used. 215 consecutive unchanged days.",
-      "us_cpi": "May 2026: 4.20% YoY (FRED stale). June 2026 CPI due July 14 at 8:30 ET — not yet released at brief generation time (10:30 UTC). Forecast ~4.1–4.2%.",
+      "us_cpi": "May 2026: 4.20% YoY (FRED stale). June 2026 CPI due July 14 at 8:30 ET \u2014 not yet released at brief generation time (10:30 UTC). Forecast ~4.1\u20134.2%.",
       "us_10yr": "4.56% (FRED July 10, +2bps from 4.54% July 9). Breakeven 2.26% (FRED July 13, +2bps from 2.24%; NEW). Real yield ~2.30%.",
       "opec_plus": "OPEC basket price unavailable (scraper null). UAE exited OPEC+ May 2026. UAE production 3.8 mb/d.",
       "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20.0bn/yr pace required; current pace AED 13.4bn/yr; deficit AED 6.6bn/yr; at current pace ~2034 (3 years late); fiscal buffer $32.09/bbl at $87.09 Brent; AED 163.5bn/yr fiscal surplus above breakeven",
       "dgs10": "FRED July 10: 4.56% (+2bps from 4.54% July 9); breakeven 2.26% (July 13)",
-      "fred_status": "FEDFUNDS 3.63% (June, 43 days stale — assumed unchanged); INDPRO 102.65 (May, 74 days stale — background only); DCOILBRENTEU $69.56 (July 6, 8 days stale — overridden by web $87.09 July 14); DCOILWTICO $69.60 (July 6, 8 days stale — web override $80.84 July 14); DGS10 4.56% (July 10, valid); T10YIE 2.26% (July 13, valid, NEW); CPIAUCSL May 2026 (74 days stale — June due today)",
+      "fred_status": "FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 74 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 8 days stale \u2014 overridden by web $87.09 July 14); DCOILWTICO $69.60 (July 6, 8 days stale \u2014 web override $80.84 July 14); DGS10 4.56% (July 10, valid); T10YIE 2.26% (July 13, valid, NEW); CPIAUCSL May 2026 (74 days stale \u2014 June due today)",
       "petrochemical": "AED 1,985mn/yr net feedstock additional cost at $87.09 Brent vs pre-escalation $69.56; gross AED 2,646mn/yr (60% pass-through on AED 17.5bn); ~25% ADNOC offset; +AED 1,229mn/yr vs prior brief ($78.95)",
       "world_bank": "All three World Bank AE API calls timed out July 14. Prior state.json baselines used: UAE GDP $552.3bn, industry 44.3% GDP, CPI 1.25%."
     }
@@ -442,6 +442,121 @@
         "v2_vs_gen": 79.0,
         "v1_vs_gen": 50.6
       }
+    },
+    {
+      "eval_date": "2026-07-14",
+      "framework": "autorubric",
+      "report_path": "outputs/eval_autorubric_2026-07-14.md",
+      "judges": [
+        "openrouter/anthropic/claude-haiku-4-5",
+        "openrouter/google/gemini-2.5-flash"
+      ],
+      "ensemble": true,
+      "briefs": {
+        "v2": "brief_v2_2026-07-14_1030.md",
+        "v1": "brief_v1_2026-07-13_0853.md",
+        "general": "brief_general_2026-06-17.md"
+      },
+      "scores": {
+        "v2": {
+          "final_score": 75.6,
+          "llm_score": 0.756,
+          "mean_agreement": 0.8,
+          "binary": {
+            "sections_complete": true,
+            "sector_matrix_complete": true,
+            "required_calculations_present": true,
+            "sources_with_vintage_dates": true,
+            "peg_chain_traced": true,
+            "watch_list_specific": true,
+            "action_flag_with_rationale": true,
+            "calculation_block_aed": true,
+            "header_metadata_complete": true,
+            "prior_state_referenced": true
+          },
+          "dims": {
+            "mandate_relevance": 5,
+            "data_grounding": 5,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 3,
+            "action_specificity": 3,
+            "data_integrity": 3,
+            "trend_continuity": 5
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": true,
+            "unsupported_number": true
+          }
+        },
+        "v1": {
+          "final_score": 61.4,
+          "llm_score": 0.614,
+          "mean_agreement": 0.75,
+          "binary": {
+            "sections_complete": true,
+            "sector_matrix_complete": true,
+            "required_calculations_present": true,
+            "sources_with_vintage_dates": true,
+            "peg_chain_traced": false,
+            "watch_list_specific": true,
+            "action_flag_with_rationale": true,
+            "calculation_block_aed": true,
+            "header_metadata_complete": true,
+            "prior_state_referenced": false
+          },
+          "dims": {
+            "mandate_relevance": 5,
+            "data_grounding": 3,
+            "quantitative_accuracy": 4,
+            "structure_completeness": 4,
+            "action_specificity": 4,
+            "data_integrity": 3,
+            "trend_continuity": 3
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": true,
+            "unsupported_number": true
+          }
+        },
+        "general": {
+          "final_score": 13.6,
+          "llm_score": 0.136,
+          "mean_agreement": 0.725,
+          "binary": {
+            "sections_complete": false,
+            "sector_matrix_complete": false,
+            "required_calculations_present": false,
+            "sources_with_vintage_dates": false,
+            "peg_chain_traced": false,
+            "watch_list_specific": false,
+            "action_flag_with_rationale": false,
+            "calculation_block_aed": false,
+            "header_metadata_complete": false,
+            "prior_state_referenced": false
+          },
+          "dims": {
+            "mandate_relevance": 4,
+            "data_grounding": 4,
+            "quantitative_accuracy": 1,
+            "structure_completeness": 3,
+            "action_specificity": 1,
+            "data_integrity": 1,
+            "trend_continuity": 3
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": true
+          }
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": 14.2,
+        "v2_vs_gen": 61.9,
+        "v1_vs_gen": 47.7
+      }
     }
   ],
   "claude_md_patches_applied": [
@@ -449,7 +564,7 @@
       "date": "2026-07-13",
       "dimension": "peg_chain_traced",
       "score": "FAIL",
-      "patch": "AED/USD peg transmission chain must appear as one explicit connected arrow-chain sentence in every brief. Use literal form: Fed [action] at X.XX% → CBUAE mirrors at X.XX% → EIBOR 3M at X.XX% → EDB floating-rate portfolio at EIBOR+200bps = X.XX% → SME quarterly debt service [impact]. Non-droppable element of Type A on every run."
+      "patch": "AED/USD peg transmission chain must appear as one explicit connected arrow-chain sentence in every brief. Use literal form: Fed [action] at X.XX% \u2192 CBUAE mirrors at X.XX% \u2192 EIBOR 3M at X.XX% \u2192 EDB floating-rate portfolio at EIBOR+200bps = X.XX% \u2192 SME quarterly debt service [impact]. Non-droppable element of Type A on every run."
     },
     {
       "date": "2026-07-13",
@@ -467,7 +582,7 @@
       "date": "2026-07-01",
       "dimension": "structure_completeness",
       "score": 3,
-      "patch": "Use **Key number:** (bold, lowercase) and **Watch list — next 72 hours:** (bold). Sources and Methodology mandatory. No YAML frontmatter."
+      "patch": "Use **Key number:** (bold, lowercase) and **Watch list \u2014 next 72 hours:** (bold). Sources and Methodology mandatory. No YAML frontmatter."
     },
     {
       "date": "2026-07-01",
