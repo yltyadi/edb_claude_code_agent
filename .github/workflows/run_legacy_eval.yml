@@ -1,0 +1,102 @@
+name: Run Legacy Evaluation
+
+# Triggers:
+#   1. workflow_dispatch — click "Run workflow" in the Actions UI
+#   2. issues titled "Run Legacy Eval" — the Space/Pages "Run Legacy Eval" button
+#      (author-gated to collaborators).
+#
+# Deliberate, button-only (NOT on the daily schedule) — the legacy framework is kept
+# purely for side-by-side comparison with AutoRubric. Scores the latest v2/v1/general
+# briefs with 20 regex checks + one OpenRouter LLM-judge call (no Node/SDK needed),
+# writes outputs/eval_<date>.md, and updates state.json -> eval_history (same-day re-runs
+# replace the prior legacy entry rather than accumulating).
+
+on:
+  workflow_dispatch:
+
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  legacy-eval:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issues' &&
+        contains(github.event.issue.title, 'Run Legacy Eval') &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+      )
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Legacy evaluation
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'anthropic/claude-sonnet-4-6' }}
+        run: python -m eval.run_eval
+
+      - name: Commit outputs to repository
+        run: |
+          git config user.name  "EDB Macro Agent"
+          git config user.email "agent@edb-macro.ai"
+          git add outputs/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "eval-legacy: $(date -u +%Y-%m-%d) [automated]"
+            git pull --rebase origin main
+            git push
+          fi
+
+      - name: Comment on issue and close it
+        if: github.event_name == 'issues' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pagesUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ **Legacy evaluation complete.** [View the Legacy Eval tab](${pagesUrl})\n\n_This issue was automatically closed._`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number, state: 'closed'
+            });
+
+      - name: Comment on issue on failure
+        if: github.event_name == 'issues' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Legacy evaluation failed.** [View logs](${runUrl})`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number, state: 'closed'
+            });
