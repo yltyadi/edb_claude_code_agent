@@ -640,7 +640,7 @@ def make_autorubric_comparison_chart():
     scores = latest.get("scores", {})
     deltas = latest.get("deltas", {})
     agents = ["v2", "v1", "general"]
-    labels = {"v2": "v2 Custom Agent", "v1": "v1 Custom Agent", "general": "General LLM"}
+    labels = {"v2": "v2 Custom Agent", "v1": "v1 Custom Agent", "general": "General Agent"}
     colors = {"v2": "#4fc3f7", "v1": "#ffb74d", "general": "#ef5350"}
 
     dim_ids   = [d["id"] for d in LLM_DIMENSIONS]
@@ -742,7 +742,7 @@ def make_autorubric_summary_md():
         f"|---|:---:|:---:|---|\n"
         f"| 🥇 **v2 Custom Agent** | **{fs('v2')}/100** | {bp('v2')} | Full pipeline: live data tools, state.json streaks, EIBOR chain, sector matrix |\n"
         f"| 🥈 v1 Custom Agent | {fs('v1')}/100 | {bp('v1')} | Custom prompting + sector mapping, no cross-session memory |\n"
-        f"| ❌ General LLM | {fs('general')}/100 | {bp('general')} | Off-the-shelf assistant with no EDB context, tools, or calculation templates |\n\n"
+        f"| ❌ General Agent | {fs('general')}/100 | {bp('general')} | Off-the-shelf assistant with no EDB context, tools, or calculation templates |\n\n"
         f"{gap_line}\n\n"
         # f"> **Why does an analyst need this custom agent?** A standard LLM assistant cannot: "
         # f"(1) fetch live macro data via FRED/CBUAE/OPEC APIs, "
@@ -784,7 +784,7 @@ def _comparison_chart(latest, dim_key: str, title_suffix: str):
     scores  = latest.get("scores", {})
     deltas  = latest.get("deltas", {})
     agents  = ["v2", "v1", "general"]
-    labels  = {"v2": "v2 Custom Agent", "v1": "v1 Custom Agent", "general": "General LLM"}
+    labels  = {"v2": "v2 Custom Agent", "v1": "v1 Custom Agent", "general": "General Agent"}
     colors  = {"v2": "#4fc3f7", "v1": "#ffb74d", "general": "#ef5350"}
     dim_ids = [d["id"] for d in LLM_DIMENSIONS]
     dim_short = [
@@ -889,7 +889,7 @@ def make_legacy_summary_md():
         f"|---|:---:|:---:|---|\n"
         f"| 🥇 **v2 Custom Agent** | **{fs('v2')}/100** | {ap('v2')} | Full pipeline: live data tools, state.json streaks, EIBOR chain, sector matrix |\n"
         f"| 🥈 v1 Custom Agent | {fs('v1')}/100 | {ap('v1')} | Custom prompting + sector mapping, no cross-session memory |\n"
-        f"| ❌ General LLM | {fs('general')}/100 | {ap('general')} | Off-the-shelf assistant with no EDB context, tools, or calculation templates |\n\n"
+        f"| ❌ General Agent | {fs('general')}/100 | {ap('general')} | Off-the-shelf assistant with no EDB context, tools, or calculation templates |\n\n"
         f"{gap_line}\n\n"
         f"> **Note:** The legacy evaluator judges all 7 quality dimensions in a single LLM call "
         f"(halo effect risk). See the **AutoRubric** tab for atomic per-criterion judging."

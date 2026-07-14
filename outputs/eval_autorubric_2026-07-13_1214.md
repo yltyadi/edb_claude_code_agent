@@ -10,7 +10,7 @@
 
 ## 1 — Binary Structural Requirements (✅ = MET, ❌ = FAIL)
 
-| Requirement | Wt | v2 Agent | v1 Agent | General LLM |
+| Requirement | Wt | v2 Agent | v1 Agent | General Agent |
 |-------------|:--:|:--:|:--:|:--:|
 | sections_complete                | +0.10 | ✅ | ✅ | ❌ |
 | sector_matrix_complete           | +0.10 | ✅ | ✅ | ❌ |
@@ -25,7 +25,7 @@
 
 ## 2 — Ordinal Quality Dimensions (1–5, atomic per-criterion judging)
 
-| Dimension | Wt | v2 Agent | v1 Agent | General LLM |
+| Dimension | Wt | v2 Agent | v1 Agent | General Agent |
 |-----------|:--:|:--:|:--:|:--:|
 | Mandate Relevance                    | 20% | 5/5 | 5/5 | 2/5 |
 | Data Grounding & Source Citation     | 16% | 5/5 | 3/5 | 3/5 |
@@ -37,7 +37,7 @@
 
 ## 3 — Negative Penalties (anti-patterns — MET is bad)
 
-| Penalty | Wt | v2 Agent | v1 Agent | General LLM |
+| Penalty | Wt | v2 Agent | v1 Agent | General Agent |
 |---------|:--:|:--:|:--:|:--:|
 | generic_market_commentary        | -0.06 | ok | ok | ok |
 | silent_stale_or_estimated_data   | -0.10 | ok | ⚠️ MET | ok |
@@ -49,13 +49,13 @@ Ensemble of 2 judges (claude-haiku-4-5, gemini-2.5-flash), majority vote.
 
 - **v2 Agent**: mean inter-judge agreement 0.95
 - **v1 Agent**: mean inter-judge agreement 0.72
-- **General LLM**: mean inter-judge agreement 0.75
+- **General Agent**: mean inter-judge agreement 0.75
 
 ---
 
 ## Final Scores
 
-| | v2 Agent | v1 Agent | General LLM |
+| | v2 Agent | v1 Agent | General Agent |
 |--|:--:|:--:|:--:|
 | AutoRubric result.score        | 0.966 | 0.648 | 0.108 |
 | **Final Score / 100**          | **96.6** | **64.8** | **10.8** |
@@ -64,7 +64,7 @@ Ensemble of 2 judges (claude-haiku-4-5, gemini-2.5-flash), majority vote.
 - **v2 vs General**: +85.8 pts
 - **v1 vs General**: +54.0 pts
 
-**Token usage:** v2 Agent: 274993 / v1 Agent: 199615 / General LLM: 175536
+**Token usage:** v2 Agent: 274993 / v1 Agent: 199615 / General Agent: 175536
 
 ---
 
