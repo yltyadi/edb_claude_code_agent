@@ -461,6 +461,16 @@
     <div class="state-loading">Loading latest brief…</div>
   </div>
 
+  <!-- ── Live AutoRubric evaluation dashboard ─────────────────────────── -->
+  <section id="eval-section" style="margin-top:2.75rem; display:none;">
+    <h2 style="font-family:Georgia,serif;font-size:1.15rem;color:var(--text);margin-bottom:0.2rem;">
+      Latest evaluation · AutoRubric
+    </h2>
+    <p id="eval-sub" style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem;">Loading evaluation…</p>
+    <div id="eval-cards" class="score-row"></div>
+    <p id="eval-note" style="font-size:0.8125rem;color:var(--muted);"></p>
+  </section>
+
   <!-- Collapsible improvement story -->
   <section class="story-section">
     <button class="story-toggle" aria-expanded="false" onclick="toggleStory(this)">
@@ -720,6 +730,65 @@
     setStatus('muted', 'Error');
   }
 
+  // ── Live AutoRubric evaluation dashboard ────────────────────────────
+  async function loadEval() {
+    const section = document.getElementById('eval-section');
+    try {
+      const resp = await fetch(`${GH_RAW}/outputs/state.json`, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`state.json ${resp.status}`);
+      const state = await resp.json();
+      const hist = state.autorubric_eval_history || [];
+      if (!hist.length) return;                    // section stays hidden
+      const latest = hist[hist.length - 1];
+      const scores = latest.scores || {};
+
+      const ORDER = [
+        ['v2',      'v2 · Claude Agent SDK', 'v2'],
+        ['v1',      'v1 · EDB structured',   'v1'],
+        ['general', 'General agent',         'gen'],
+      ];
+      const cards = document.getElementById('eval-cards');
+      cards.innerHTML = '';
+      let shown = 0;
+      for (const [key, label, cls] of ORDER) {
+        const sc = scores[key];
+        if (!sc) continue;
+        const binary = sc.binary || {};
+        const passed = Object.values(binary).filter(Boolean).length;
+        const total  = Object.keys(binary).length || 10;
+        const score  = (sc.final_score != null ? Number(sc.final_score) : 0).toFixed(1);
+        const card = document.createElement('div');
+        card.className = 'score-card ' + cls;
+        card.innerHTML =
+          `<div class="sc-lbl">${label}</div>` +
+          `<div class="sc-val">${score}</div>` +
+          `<div class="sc-auto">${passed} / ${total} structural checks</div>`;
+        cards.appendChild(card);
+        shown++;
+      }
+      if (!shown) return;
+
+      const judges = (latest.judges || []).map(j => j.split('/').pop()).join(' + ');
+      document.getElementById('eval-sub').textContent =
+        `${latest.eval_date} · each criterion judged independently` +
+        (judges ? ` · judges: ${judges}` : '');
+
+      const d = latest.deltas || {};
+      const notes = [];
+      if (d.v2_vs_gen != null) notes.push(`v2 leads the general agent by +${Math.round(d.v2_vs_gen)} points`);
+      const v2pen = (scores.v2 && scores.v2.penalties) || {};
+      if (Object.keys(v2pen).length) {
+        const fired = Object.values(v2pen).filter(Boolean).length;
+        notes.push(fired === 0 ? 'no penalties fired on v2' : `${fired} penalty${fired > 1 ? 'ies' : ''} fired on v2`);
+      }
+      document.getElementById('eval-note').textContent = notes.join(' · ');
+
+      section.style.display = 'block';
+    } catch (e) {
+      console.warn('eval load failed:', e);        // fail quietly — never break the brief view
+    }
+  }
+
   // ── Story toggle ────────────────────────────────────────────────────
   window.toggleStory = function(btn) {
     const body = document.getElementById('story-body');
@@ -746,6 +815,9 @@
       // Load the latest brief (first in sorted list)
       const latest = files[0];
       await loadBrief(latest.download_url, latest.name);
+
+      // Load the live AutoRubric eval dashboard (non-blocking, fails quietly)
+      loadEval();
 
       // Wire selector change
       document.getElementById('brief-select').addEventListener('change', async function () {

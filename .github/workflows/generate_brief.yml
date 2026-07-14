@@ -1,18 +1,28 @@
 name: Generate EDB Macro Brief
 
 # Triggers:
-#   1. workflow_dispatch — any collaborator can click "Run workflow" in the Actions UI
-#   2. issues (opened/reopened) — any collaborator can open a GitHub issue titled
-#      "Generate Brief" to trigger a run from the web UI or the Pages button.
-#      author_association check ensures only OWNER / MEMBER / COLLABORATOR can trigger.
+#   1. schedule       — daily autonomous run at 05:00 UTC (≈ 09:00 Gulf time)
+#   2. workflow_dispatch — any collaborator clicks "Run workflow" in the Actions UI
+#   3. issues (opened/reopened) — collaborator opens an issue titled "Generate Brief"
+#      (this is what the GitHub Pages "Generate New Brief" button does).
+#
+# The brief is produced by the **Claude Agent SDK** runner (run_agent_sdk.py),
+# which needs Node.js + the `claude` CLI and routes the model through OpenRouter.
 
 on:
+  schedule:
+    - cron: '0 5 * * *'          # daily 05:00 UTC
+
   workflow_dispatch:
     inputs:
       notes:
         description: 'Optional notes (shown in commit message)'
         required: false
         default: ''
+      run_eval:
+        description: 'Run the AutoRubric evaluation after the brief'
+        required: false
+        default: 'true'
 
   issues:
     types: [opened, reopened]
@@ -23,9 +33,10 @@ permissions:
 
 jobs:
   generate-brief:
-    # For issues: trigger only if title contains "Generate Brief" AND author is a collaborator/owner.
-    # For workflow_dispatch: always run.
+    # For issues: only if title contains "Generate Brief" AND author is a collaborator/owner.
+    # For schedule / workflow_dispatch: always run.
     if: |
+      github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
       (
         github.event_name == 'issues' &&
@@ -34,7 +45,7 @@ jobs:
       )
 
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -49,22 +60,45 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Run EDB agent
+      - name: Install the Claude Code CLI (required by the Agent SDK)
+        run: npm install -g @anthropic-ai/claude-code --no-audit --no-fund
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt   # includes claude-agent-sdk
+
+      - name: Run EDB agent (Claude Agent SDK)
         id: run_agent
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'anthropic/claude-sonnet-4-6' }}
+          AGENT_MAX_BUDGET_USD: ${{ vars.AGENT_MAX_BUDGET_USD || '5' }}
         run: |
           set -o pipefail  # propagate Python exit code through the pipe
-          python run_agent.py 2>&1 | tee agent_output.txt
-          # Extract the SUMMARY_JSON line for downstream steps
+          python run_agent_sdk.py 2>&1 | tee agent_output.txt
           SUMMARY=$(grep "^SUMMARY_JSON=" agent_output.txt | tail -1 | sed 's/^SUMMARY_JSON=//')
           echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
           echo "brief_name=$(echo $SUMMARY | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d["brief_name"])')" >> $GITHUB_OUTPUT
+
+      - name: Run AutoRubric evaluation
+        # Runs on schedule always; on manual dispatch unless run_eval=false; skipped for the
+        # lightweight Pages "Generate" button (issue trigger). Non-fatal — a flaky eval must
+        # not lose the brief.
+        if: |
+          success() && (
+            github.event_name == 'schedule' ||
+            (github.event_name == 'workflow_dispatch' && github.event.inputs.run_eval != 'false')
+          )
+        continue-on-error: true
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          AUTORUBRIC_JUDGES: ${{ vars.AUTORUBRIC_JUDGES || 'openrouter/anthropic/claude-haiku-4-5,openrouter/google/gemini-2.5-flash' }}
+        run: python -m eval_autorubric.run_eval
 
       - name: Commit outputs to repository
         run: |
@@ -77,8 +111,7 @@ jobs:
             NOTE="${{ github.event.inputs.notes }}"
             MSG="brief: $(date -u +%Y-%m-%d)"
             [ -n "$NOTE" ] && MSG="$MSG — $NOTE"
-            git commit -m "$MSG [automated]"
-            # Rebase on any concurrent pushes before pushing
+            git commit -m "$MSG [automated, agent-sdk]"
             git pull --rebase origin main
             git push
           fi
