@@ -1,0 +1,101 @@
+name: Run AutoRubric Evaluation
+
+# Triggers:
+#   1. workflow_dispatch — click "Run workflow" in the Actions UI
+#   2. issues (opened/reopened) titled "Run AutoRubric Eval" — this is what the
+#      GitHub Pages "Run AutoRubric Eval" button does (author-gated to collaborators).
+#
+# Scores the latest v2 / v1 / general briefs with the AutoRubric engine (no Agent SDK,
+# no Node — the judges run via OpenRouter), writes outputs/eval_autorubric_<date>.md, and
+# appends to state.json -> autorubric_eval_history so the Pages "AutoRubric" tab refreshes.
+# (The daily generate_brief.yml already runs this eval automatically after each brief.)
+
+on:
+  workflow_dispatch:
+
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  autorubric-eval:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issues' &&
+        contains(github.event.issue.title, 'Run AutoRubric Eval') &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+      )
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run AutoRubric evaluation
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          AUTORUBRIC_JUDGES: ${{ vars.AUTORUBRIC_JUDGES || 'openrouter/anthropic/claude-haiku-4-5,openrouter/google/gemini-2.5-flash' }}
+        run: python -m eval_autorubric.run_eval
+
+      - name: Commit outputs to repository
+        run: |
+          git config user.name  "EDB Macro Agent"
+          git config user.email "agent@edb-macro.ai"
+          git add outputs/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "eval-autorubric: $(date -u +%Y-%m-%d) [automated]"
+            git pull --rebase origin main
+            git push
+          fi
+
+      - name: Comment on issue and close it
+        if: github.event_name == 'issues' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pagesUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ **AutoRubric evaluation complete.** [View the AutoRubric tab](${pagesUrl})\n\n_This issue was automatically closed._`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number, state: 'closed'
+            });
+
+      - name: Comment on issue on failure
+        if: github.event_name == 'issues' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **AutoRubric evaluation failed.** [View logs](${runUrl})`
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number, state: 'closed'
+            });
