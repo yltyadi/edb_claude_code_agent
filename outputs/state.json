@@ -4,8 +4,8 @@
   "last_updated": "2026-07-14",
   "last_run": {
     "date": "2026-07-14",
-    "timestamp": "2026-07-14T11:15:00.000000",
-    "brief_path": "outputs/brief_v2_2026-07-14_1520.md",
+    "timestamp": "2026-07-14T11:48:00.000000",
+    "brief_path": "outputs/brief_v2_2026-07-14_1148.md",
     "agent_version": "v2"
   },
   "baselines": {
@@ -28,10 +28,10 @@
     "uae_fdi_inflows_usd_bn": 45.6,
     "uae_cpi_inflation_pct": 1.25,
     "notes": {
-      "eibor": "3.900% (est.) as of July 14 2026; CBUAE base rate 3.65% confirmed July 14; last live EIBOR confirmation July 10 2026; EIBOR-base spread 25bps; 6 consecutive unchanged days (streak began July 9)",
-      "brent": "July 14 2026: $87.09 (TradingEconomics); Fortune $86.99 corroborates. Flat vs. prior session $87.09. 7th session at elevated Hormuz-crisis levels. +$17.53/bbl vs pre-escalation FRED close $69.56. FRED July 6 $69.56 stale \u2014 overridden.",
-      "wti": "July 14 FXLeaders $79.56 (\u2212$1.28, \u22121.6% vs prior $80.84). US-Iran interim deal reported \u2014 partial war premium removal. FRED July 6 $69.60 stale \u2014 overridden. Brent-WTI spread $7.53 (elevated vs normal $2-4).",
-      "hormuz": "Day 135+ of formal closure. US-Iran interim deal reported July 14 (FXLeaders) \u2014 unconfirmed, partial war premium removal. 34 ships/day vs 88 normal (39% throughput). ADNOC Fujairah bypass 1.5 mb/d (~50% UAE export coverage). Interim deal: increased Iranian oil exports possible but Hormuz not yet reopened.",
+      "eibor": "3.900% (est.) as of July 14 2026 1148 UTC; CBUAE base rate 3.65% confirmed July 14; last live EIBOR confirmation July 10 2026; EIBOR-base spread 25bps; 7 consecutive unchanged days (streak: day 7)",
+      "brent": "July 14 2026 1148 UTC: $87.09 (state.json morning; CBS News reports surge above $86 post-blockade reinstatement). Flat session-on-session. 8th session at elevated Hormuz-crisis level. +$17.53/bbl vs pre-escalation FRED close $69.56. FRED July 6 $69.56 stale \u2014 overridden.",
+      "wti": "July 14 1148 UTC: $79.56 per state.json morning; CBS News confirmed ~$78 July 13. US blockade reinstatement may push WTI higher. FRED July 6 $69.60 stale \u2014 overridden. Brent-WTI spread elevated.",
+      "hormuz": "Day 8 of active kinetic conflict (July 7\u2013July 14 confirmed). July 14: US reinstated naval blockade + 20% cargo surcharge. Iran struck UAE tankers Al Bahiyah and Mombasa with cruise missiles \u2014 1 killed, 8 injured. Only 14 vessels/day vs 88 pre-crisis (16% throughput). ADNOC Fujairah bypass 1.5 mb/d oil only. US sea drones first combat use. US struck Bushehr (city). Iran struck Bahrain, Jordan, UAE tankers.",
       "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production 3.8 mb/d (Reuters July 6 2026). Targeting 5 mb/d by 2031.",
       "make_it_in_emirates": "AED 180bn industrial procurement opportunities (Make it in the Emirates 2026). 20% conversion = AED 7.2bn/yr additional pace \u2014 closes the AED 6.6bn/yr deficit.",
       "fed": "June 17 FOMC \u2014 5th consecutive hold; Fed Funds 3.50\u20133.75%. July 29 FOMC upcoming \u2014 ~25% hike probability pre-June CPI. June CPI due July 14 at 12:30 UTC \u2014 not yet released at brief generation (11:15 UTC). FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged).",
@@ -44,37 +44,38 @@
       "fred_status": "FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 74 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 8 days stale \u2014 overridden by web $87.09 July 14); DCOILWTICO $69.60 (July 6, 8 days stale \u2014 web override $79.56 July 14); DGS10 4.56% (July 10, valid); T10YIE 2.26% (July 13, valid); CPIAUCSL May 2026 (74 days stale \u2014 June due today 12:30 UTC, not yet released)",
       "petrochemical": "AED 1,985mn/yr net feedstock additional cost at $87.09 Brent vs pre-escalation $69.56; gross AED 2,646mn/yr (60% pass-through on AED 17.5bn); ~25% ADNOC offset; UNCHANGED from prior brief (Brent flat session-on-session)",
       "world_bank": "All four World Bank AE API calls timed out July 14 (4th consecutive session). Prior state.json baselines used: UAE GDP $552.3bn, industry 44.3% GDP, CPI 1.25%, FDI $45.6bn.",
-      "us_iran_deal": "FXLeaders July 14 2026 reports US-Iran interim deal removing war premium, allowing increased Iranian oil exports. Unconfirmed. WTI fell $1.28 to $79.56 on this signal. Brent held at $87.09 (Hormuz routing risk still priced in). Monitor Brent-WTI spread compression below $5 as confirmation signal."
+      "us_iran_deal": "No peace deal effective July 14 at 1148 UTC. Prior 'interim deal' report from FXLeaders was NOT confirmed \u2014 US reinstated blockade July 14. Iran struck two UAE-flagged tankers Al Bahiyah and Mombasa with cruise missiles. Conflict escalating, not de-escalating. Brent held $87.09. WTI $79.56. Peace deal scenario materially less likely.",
+      "uae_tanker_attack": "July 14 2026: Iran struck Mombasa and Al Bahiyah (UAE-linked oil tankers) in Hormuz Strait with cruise missiles. 1 crew killed, 8 injured (mostly Indian nationals). UAE confirmed casualties. First direct kinetic action against UAE commercial vessels. CBS News live blog July 14.",
+      "us_blockade_cargo_fee": "July 14: Trump declared US Guardian of Hormuz Strait, reinstated naval blockade of Iranian ports, announced 20% cargo surcharge on all vessels transiting strait. Effective 4pm ET Tuesday. CBS News July 14.",
+      "june_cpi_2026": "BLS scheduled 08:30 ET July 14 (12:30 UTC). NOT yet released at 11:48 UTC. May benchmark 4.2% YoY. Critical for July 29 FOMC decision. Will update when released."
     }
   },
   "streaks": {
     "brent_direction": "flat",
-    "brent_direction_sessions": 1,
+    "brent_direction_sessions": 2,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 6,
+    "eibor_unchanged_days": 7,
     "cbuae_rate_unchanged_days": 216
   },
   "signals_fired_last_run": [
-    "us_iran_interim_deal_reported_jul14_war_premium_partial_removal_unconfirmed",
-    "wti_79.56_fxleaders_jul14_down_1.28_first_decline_6_sessions",
-    "brent_87.09_flat_session_7th_elevated_hormuz_level",
-    "brent_wti_spread_7.53_elevated_vs_normal_2_4",
-    "uae_fiscal_surplus_aed163.4bn_yr_figure_A_at_87.09_brent",
-    "war_premium_uplift_aed89.3bn_yr_figure_B_vs_pre_escalation",
-    "post_deal_scenario_aed74.1bn_yr_figure_C_if_brent_returns_69.56",
+    "iran_strikes_uae_tankers_al_bahiyah_mombasa_1_killed_8_injured_NEW",
+    "us_reinstates_iran_naval_blockade_20pct_cargo_surcharge_NEW",
+    "us_strikes_bushehr_city_NEW",
+    "hormuz_16pct_throughput_14_vessels_vs_88_five_week_low",
+    "brent_87.09_flat_session_8th_elevated_hormuz_level",
+    "uae_fiscal_surplus_aed163.5bn_yr_figure_B_at_87.09_brent_vs_55bbl_breakeven",
+    "war_premium_uplift_aed89.3bn_yr_figure_C_vs_pre_escalation_69.56",
+    "session_delta_aed0_figure_A_brent_flat",
     "petrochemical_feedstock_aed1985mn_net_unchanged_session_on_session",
-    "fomc_5consecutive_holds_july29_upcoming_25pct_hike_probability",
-    "june_cpi_due_1230utc_today_not_yet_released_critical_watch",
-    "eibor_3.900pct_estimated_unchanged_day6",
-    "cbuae_3.65pct_unchanged_day216_confirmed_today",
-    "peg_chain_traced_fed_cbuae_eibor_edb_sme_5.90pct_ads_252321",
-    "operation_300bn_aed200bn_milestone_pace_deficit_6.6bn_yr_40.1pct_gap",
-    "make_it_in_emirates_aed180bn_pipeline_7.2bn_yr_conversion",
-    "t10yie_2.26pct_valid_july13_real_yield_2.30pct",
-    "dgs10_4.56pct_valid_july10_plus2bps",
-    "worldbank_all_four_timeout_state_fallback_4th_consecutive_session",
-    "hormuz_34_ships_88_normal_crisis_index_ongoing",
-    "adnoc_fujairah_bypass_50pct_coverage_1.5mbpd"
+    "fomc_5consecutive_holds_july29_upcoming_june_cpi_pending_1230utc",
+    "june_cpi_not_yet_released_at_1148utc_critical_watch",
+    "eibor_3.900pct_estimated_unchanged_day7",
+    "cbuae_3.65pct_unchanged_day216",
+    "peg_chain_fed_3.50_to_3.75_cbuae_3.65_eibor_3.90est_edb_5.90_sme_ads_877091",
+    "operation_300bn_aed200bn_40.1pct_gap_pace_deficit_6.6bn_yr",
+    "worldbank_all_5_api_timeout_state_fallback",
+    "dgs10_4.56pct_valid_july10",
+    "t10yie_2.26pct_valid_july13"
   ],
   "eval_history": [
     {
@@ -135,14 +136,14 @@
       "eval_date": "2026-07-14",
       "framework": "legacy",
       "report_path": "outputs/eval_2026-07-14.md",
-      "v2_brief_path": "outputs/brief_v2_2026-07-14_1120.md",
+      "v2_brief_path": "outputs/brief_v2_2026-07-14_1148.md",
       "v1_brief_path": "outputs/brief_v1_2026-07-14_1124.md",
       "general_brief_path": "outputs/brief_general_2026-07-14.md",
       "scores": {
         "v2": {
-          "auto_passed": 19,
+          "auto_passed": 17,
           "auto_total": 20,
-          "final_score": 96.6,
+          "final_score": 92.6,
           "dimension_scores": {
             "mandate_relevance": 5,
             "data_grounding": 5,
@@ -183,8 +184,8 @@
         }
       },
       "deltas": {
-        "v2_vs_v1": 8.3,
-        "v2_vs_gen": 61.1,
+        "v2_vs_v1": 4.3,
+        "v2_vs_gen": 57.1,
         "v1_vs_gen": 52.8
       },
       "dimensions_patched_v2": []
