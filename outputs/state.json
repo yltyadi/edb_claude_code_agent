@@ -188,6 +188,64 @@
         "v1_vs_gen": 52.8
       },
       "dimensions_patched_v2": []
+    },
+    {
+      "eval_date": "2026-07-15",
+      "framework": "legacy",
+      "report_path": "outputs/eval_2026-07-15.md",
+      "v2_brief_path": "outputs/brief_v2_2026-07-15_0715.md",
+      "v1_brief_path": "outputs/brief_v1_2026-07-14_1124.md",
+      "general_brief_path": "outputs/brief_general_2026-07-14.md",
+      "scores": {
+        "v2": {
+          "auto_passed": 18,
+          "auto_total": 20,
+          "final_score": 94.6,
+          "dimension_scores": {
+            "mandate_relevance": 5,
+            "data_grounding": 5,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 4,
+            "action_specificity": 5,
+            "data_integrity": 5,
+            "trend_continuity": 5
+          }
+        },
+        "v1": {
+          "auto_passed": 17,
+          "auto_total": 20,
+          "final_score": 88.2,
+          "dimension_scores": {
+            "mandate_relevance": 5,
+            "data_grounding": 5,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 5,
+            "action_specificity": 4,
+            "data_integrity": 5,
+            "trend_continuity": 2
+          }
+        },
+        "general": {
+          "auto_passed": 5,
+          "auto_total": 20,
+          "final_score": 35.4,
+          "dimension_scores": {
+            "mandate_relevance": 2,
+            "data_grounding": 3,
+            "quantitative_accuracy": 1,
+            "structure_completeness": 2,
+            "action_specificity": 2,
+            "data_integrity": 3,
+            "trend_continuity": 2
+          }
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": 6.3,
+        "v2_vs_gen": 59.1,
+        "v1_vs_gen": 52.8
+      },
+      "dimensions_patched_v2": []
     }
   ],
   "autorubric_eval_history": [
