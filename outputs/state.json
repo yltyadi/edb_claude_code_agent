@@ -1,81 +1,80 @@
 {
   "schema_version": 1,
   "agent_version": "v2",
-  "last_updated": "2026-07-14",
+  "last_updated": "2026-07-15",
   "last_run": {
-    "date": "2026-07-14",
-    "timestamp": "2026-07-14T11:48:00.000000",
-    "brief_path": "outputs/brief_v2_2026-07-14_1148.md",
+    "date": "2026-07-15",
+    "timestamp": "2026-07-15T07:15:00.000000",
+    "brief_path": "outputs/brief_v2_2026-07-15_0715.md",
     "agent_version": "v2"
   },
   "baselines": {
     "eibor_3m_pct": 3.9,
-    "brent_usd": 87.09,
-    "wti_usd": 79.56,
+    "brent_usd": 85.99,
+    "wti_usd": 80.31,
     "fed_funds_upper_pct": 3.75,
     "fed_funds_lower_pct": 3.5,
     "cbuae_base_rate_pct": 3.65,
-    "us_cpi_yoy_pct": 4.2,
+    "us_cpi_yoy_pct": 3.54,
+    "us_cpi_index_june_2026": 332.568,
     "us_pce_yoy_pct": 4.1,
     "us_pce_core_yoy_pct": 3.4,
-    "us_10yr_treasury_pct": 4.56,
-    "breakeven_inflation_pct": 2.26,
+    "us_10yr_treasury_pct": 4.62,
+    "breakeven_inflation_pct": 2.25,
     "uae_gdp_growth_forecast_pct": 5.0,
-    "opec_basket_usd": null,
+    "opec_basket_usd": 75.09,
     "uae_production_mbpd": 3.8,
     "uae_gdp_usd_bn": 552.3,
     "uae_industry_pct_gdp": 44.3,
     "uae_fdi_inflows_usd_bn": 45.6,
     "uae_cpi_inflation_pct": 1.25,
     "notes": {
-      "eibor": "3.900% (est.) as of July 14 2026 1148 UTC; CBUAE base rate 3.65% confirmed July 14; last live EIBOR confirmation July 10 2026; EIBOR-base spread 25bps; 7 consecutive unchanged days (streak: day 7)",
-      "brent": "July 14 2026 1148 UTC: $87.09 (state.json morning; CBS News reports surge above $86 post-blockade reinstatement). Flat session-on-session. 8th session at elevated Hormuz-crisis level. +$17.53/bbl vs pre-escalation FRED close $69.56. FRED July 6 $69.56 stale \u2014 overridden.",
-      "wti": "July 14 1148 UTC: $79.56 per state.json morning; CBS News confirmed ~$78 July 13. US blockade reinstatement may push WTI higher. FRED July 6 $69.60 stale \u2014 overridden. Brent-WTI spread elevated.",
-      "hormuz": "Day 8 of active kinetic conflict (July 7\u2013July 14 confirmed). July 14: US reinstated naval blockade + 20% cargo surcharge. Iran struck UAE tankers Al Bahiyah and Mombasa with cruise missiles \u2014 1 killed, 8 injured. Only 14 vessels/day vs 88 pre-crisis (16% throughput). ADNOC Fujairah bypass 1.5 mb/d oil only. US sea drones first combat use. US struck Bushehr (city). Iran struck Bahrain, Jordan, UAE tankers.",
-      "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production 3.8 mb/d (Reuters July 6 2026). Targeting 5 mb/d by 2031.",
-      "make_it_in_emirates": "AED 180bn industrial procurement opportunities (Make it in the Emirates 2026). 20% conversion = AED 7.2bn/yr additional pace \u2014 closes the AED 6.6bn/yr deficit.",
-      "fed": "June 17 FOMC \u2014 5th consecutive hold; Fed Funds 3.50\u20133.75%. July 29 FOMC upcoming \u2014 ~25% hike probability pre-June CPI. June CPI due July 14 at 12:30 UTC \u2014 not yet released at brief generation (11:15 UTC). FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged).",
-      "cbuae": "3.65% confirmed July 14 2026. 216 consecutive unchanged days.",
-      "us_cpi": "May 2026: 4.20% YoY (FRED stale). June 2026 CPI due July 14 at 12:30 UTC \u2014 not yet released at brief generation time (11:15 UTC). Forecast ~4.1\u20134.2%.",
-      "us_10yr": "4.56% (FRED July 10, valid, +2bps from 4.54% July 9). Breakeven 2.26% (FRED July 13, valid, +2bps from 2.24%). Real yield ~2.30%.",
-      "opec_plus": "OPEC basket price unavailable (scraper null). UAE exited OPEC+ May 2026. UAE production 3.8 mb/d.",
-      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20.0bn/yr pace required; current pace AED 13.4bn/yr; deficit AED 6.6bn/yr; at current pace ~2034 (3 years late); fiscal surplus [A] AED 163.4bn/yr at $87.09 Brent; war-premium uplift [B] AED 89.3bn/yr; post-deal scenario [C] AED 74.1bn/yr",
-      "dgs10": "FRED July 10: 4.56% (+2bps from 4.54% July 9); breakeven 2.26% (July 13)",
-      "fred_status": "FEDFUNDS 3.63% (June, 43 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 74 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 8 days stale \u2014 overridden by web $87.09 July 14); DCOILWTICO $69.60 (July 6, 8 days stale \u2014 web override $79.56 July 14); DGS10 4.56% (July 10, valid); T10YIE 2.26% (July 13, valid); CPIAUCSL May 2026 (74 days stale \u2014 June due today 12:30 UTC, not yet released)",
-      "petrochemical": "AED 1,985mn/yr net feedstock additional cost at $87.09 Brent vs pre-escalation $69.56; gross AED 2,646mn/yr (60% pass-through on AED 17.5bn); ~25% ADNOC offset; UNCHANGED from prior brief (Brent flat session-on-session)",
-      "world_bank": "All four World Bank AE API calls timed out July 14 (4th consecutive session). Prior state.json baselines used: UAE GDP $552.3bn, industry 44.3% GDP, CPI 1.25%, FDI $45.6bn.",
-      "us_iran_deal": "No peace deal effective July 14 at 1148 UTC. Prior 'interim deal' report from FXLeaders was NOT confirmed \u2014 US reinstated blockade July 14. Iran struck two UAE-flagged tankers Al Bahiyah and Mombasa with cruise missiles. Conflict escalating, not de-escalating. Brent held $87.09. WTI $79.56. Peace deal scenario materially less likely.",
-      "uae_tanker_attack": "July 14 2026: Iran struck Mombasa and Al Bahiyah (UAE-linked oil tankers) in Hormuz Strait with cruise missiles. 1 crew killed, 8 injured (mostly Indian nationals). UAE confirmed casualties. First direct kinetic action against UAE commercial vessels. CBS News live blog July 14.",
-      "us_blockade_cargo_fee": "July 14: Trump declared US Guardian of Hormuz Strait, reinstated naval blockade of Iranian ports, announced 20% cargo surcharge on all vessels transiting strait. Effective 4pm ET Tuesday. CBS News July 14.",
-      "june_cpi_2026": "BLS scheduled 08:30 ET July 14 (12:30 UTC). NOT yet released at 11:48 UTC. May benchmark 4.2% YoY. Critical for July 29 FOMC decision. Will update when released."
+      "eibor": "3.900% (est.) as of July 15 2026 0715 UTC; CBUAE base rate 3.65% confirmed July 14; last live EIBOR confirmation July 10 2026; EIBOR-base spread 25bps; 8 consecutive unchanged days (streak: day 8). CBUAE scraper null July 15.",
+      "brent": "July 15 2026 0715 UTC: $85.99 +1.49% (oilprice.com). Down $1.10 from prior $87.09. OPEC demand forecast cut weighing. China refinery runs at pandemic lows. Hormuz crisis Day 9. FRED July 6 $69.56 stale \u2014 overridden. War premium vs pre-escalation: $85.99 - $69.56 = $16.43/bbl.",
+      "wti": "July 15 2026 0715 UTC: $80.31 +1.22% (oilprice.com). Down from prior $79.56 state.json. FRED July 6 $69.60 stale \u2014 overridden.",
+      "hormuz": "Day 9 of active kinetic conflict (July 7\u2013July 15). US naval blockade reinstated July 14. 20% cargo surcharge in force. ~14 vessels/day vs 88 pre-crisis (16% throughput). Iran moving ~12mn barrels past blockade. Fujairah bypass 1.5 mb/d oil only. Pakistan seeking emergency LNG. China crude imports decade-low. Asian buyers pivoting to US crude.",
+      "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production 3.8 mb/d (Reuters July 6 2026). Targeting 5 mb/d by 2031. OPEC basket $75.09 (oilprice.com July 14-15).",
+      "cpi_june_2026": "FRED CPIAUCSL June 2026 index = 332.568 (dated 2026-06-01). May 2026 index 333.979. MoM -0.422%. Estimated YoY ~3.54% (vs May 4.20%). Derived from back-calculation of May 2025 index. Sharpest disinflation reading of 2025-26 cycle. KEY NEW SIGNAL for FOMC July 29.",
+      "fed": "June 17 FOMC \u2014 5th consecutive hold; Fed Funds 3.50\u20133.75%. July 29 FOMC upcoming \u2014 June CPI est. ~3.54% raises cut probability materially. FEDFUNDS 3.63% (June, 44 days stale \u2014 assumed unchanged).",
+      "cbuae": "3.65% confirmed July 14 2026. 217 consecutive unchanged days. Scraper null July 15. Prior confirmed baseline used.",
+      "us_10yr": "4.62% (FRED July 13, valid, +6bps from 4.56% July 10). Breakeven 2.25% (FRED July 14, valid, -1bp). Real yield ~2.37%. Hormuz risk premium visible in long end.",
+      "opec_plus": "OPEC basket $75.09 (oilprice.com July 14-15). OPEC cut 2026 demand forecast. UAE exited OPEC+ May 2026. UAE production 3.8 mb/d.",
+      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 20.0bn/yr pace required; current pace AED 13.4bn/yr; deficit AED 6.6bn/yr; at current pace ~2034 (3 years late). No new data this session.",
+      "dgs10": "FRED July 13: 4.62% (+6bps from 4.56% July 10); breakeven 2.25% (July 14, -1bp)",
+      "fred_status": "FEDFUNDS 3.63% (June, 44 days stale \u2014 assumed unchanged); INDPRO 102.65 (May, 75 days stale \u2014 background only); DCOILBRENTEU $69.56 (July 6, 9 days stale \u2014 overridden by oilprice.com $85.99 July 15); DCOILWTICO $69.60 (July 6, 9 days stale \u2014 web override $80.31 July 15); DGS10 4.62% (July 13, valid); T10YIE 2.25% (July 14, valid); CPIAUCSL June 2026 index 332.568 (dated 2026-06-01, VALID \u2014 NEW data)",
+      "petrochemical": "AED 1,860mn/yr net feedstock additional cost at $85.99 Brent vs pre-escalation $69.56 (Brent -$1.10 from prior brief gave -$99mn/yr session relief; net vs pre-escalation AED 1,860mn/yr vs prior brief AED 1,985mn/yr)",
+      "world_bank": "All four World Bank AE API calls timed out July 14 (4th consecutive session). Not retried July 15. Prior state.json baselines used: UAE GDP $552.3bn, industry 44.3% GDP, CPI 1.25%, FDI $45.6bn.",
+      "fomc_july29": "June CPI MoM -0.42%, estimated YoY ~3.54% vs May 4.20% \u2014 sharpest disinflation of cycle. FOMC July 29 cut probability materially elevated. Watch PCE July 31 for confirmation.",
+      "china_demand": "China crude imports decade-low in June 2026 (Hormuz). Refinery runs crashed to pandemic lows (July 15 oilprice.com). Weighing on medium-term Brent support despite Hormuz disruption.",
+      "oil_fiscal_figures": "Figure A (session delta Jul15 vs Jul14): AED -5.60bn/yr. Figure B (war premium vs $69.56 pre-escalation): AED +83.69bn/yr. Figure C (surplus vs $55 breakeven): AED +157.86bn/yr. All computed at $85.99 Brent, 3.8 mb/d, peg 3.6725."
     }
   },
   "streaks": {
-    "brent_direction": "flat",
-    "brent_direction_sessions": 2,
+    "brent_direction": "declining",
+    "brent_direction_sessions": 1,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 7,
-    "cbuae_rate_unchanged_days": 216
+    "eibor_unchanged_days": 8,
+    "cbuae_rate_unchanged_days": 217
   },
   "signals_fired_last_run": [
-    "iran_strikes_uae_tankers_al_bahiyah_mombasa_1_killed_8_injured_NEW",
-    "us_reinstates_iran_naval_blockade_20pct_cargo_surcharge_NEW",
-    "us_strikes_bushehr_city_NEW",
-    "hormuz_16pct_throughput_14_vessels_vs_88_five_week_low",
-    "brent_87.09_flat_session_8th_elevated_hormuz_level",
-    "uae_fiscal_surplus_aed163.5bn_yr_figure_B_at_87.09_brent_vs_55bbl_breakeven",
-    "war_premium_uplift_aed89.3bn_yr_figure_C_vs_pre_escalation_69.56",
-    "session_delta_aed0_figure_A_brent_flat",
-    "petrochemical_feedstock_aed1985mn_net_unchanged_session_on_session",
-    "fomc_5consecutive_holds_july29_upcoming_june_cpi_pending_1230utc",
-    "june_cpi_not_yet_released_at_1148utc_critical_watch",
-    "eibor_3.900pct_estimated_unchanged_day7",
-    "cbuae_3.65pct_unchanged_day216",
+    "june_cpi_fred_index_332.568_yoy_est_3.54pct_NEW_sharpest_disinflation",
+    "hormuz_day9_16pct_throughput_iran_exports_continuing",
+    "brent_85.99_declining_session1_down_1.10_from_87.09",
+    "opec_demand_forecast_cut_basket_75.09_NEW",
+    "china_refinery_runs_pandemic_lows_decade_low_imports_NEW",
+    "figure_A_session_delta_aed_minus5.60bn_yr",
+    "figure_B_war_premium_aed_plus83.69bn_yr_vs_69.56",
+    "figure_C_surplus_aed_157.86bn_yr_vs_55_breakeven",
+    "petrochemical_feedstock_aed_1860mn_net_session_relief_minus99mn",
+    "fomc_5consecutive_holds_july29_upcoming_june_cpi_elevated_cut_probability",
+    "eibor_3.900pct_estimated_unchanged_day8",
+    "cbuae_3.65pct_unchanged_day217",
     "peg_chain_fed_3.50_to_3.75_cbuae_3.65_eibor_3.90est_edb_5.90_sme_ads_877091",
     "operation_300bn_aed200bn_40.1pct_gap_pace_deficit_6.6bn_yr",
-    "worldbank_all_5_api_timeout_state_fallback",
-    "dgs10_4.56pct_valid_july10",
-    "t10yie_2.26pct_valid_july13"
+    "worldbank_all_api_timeout_state_fallback",
+    "dgs10_4.62pct_valid_july13_plus6bps",
+    "t10yie_2.25pct_valid_july14_minus1bp",
+    "real_yield_2.37pct"
   ],
   "eval_history": [
     {
@@ -275,70 +274,11 @@
         "v1": {
           "final_score": 90.3,
           "llm_score": 0.903,
-          "mean_agreement": 0.975,
-          "binary": {
-            "sections_complete": true,
-            "sector_matrix_complete": true,
-            "required_calculations_present": true,
-            "sources_with_vintage_dates": true,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": true,
-            "calculation_block_aed": true,
-            "header_metadata_complete": true,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 5,
-            "structure_completeness": 5,
-            "action_specificity": 5,
-            "data_integrity": 5,
-            "trend_continuity": 1
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": false
-          }
+          "mean_agreement": 0.975
         },
         "general": {
-          "final_score": 15.9,
-          "llm_score": 0.159,
-          "mean_agreement": 0.7,
-          "binary": {
-            "sections_complete": false,
-            "sector_matrix_complete": false,
-            "required_calculations_present": false,
-            "sources_with_vintage_dates": false,
-            "peg_chain_traced": true,
-            "watch_list_specific": true,
-            "action_flag_with_rationale": false,
-            "calculation_block_aed": false,
-            "header_metadata_complete": false,
-            "prior_state_referenced": false
-          },
-          "dims": {
-            "mandate_relevance": 2,
-            "data_grounding": 3,
-            "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 2,
-            "data_integrity": 2,
-            "trend_continuity": 4
-          },
-          "penalties": {
-            "generic_market_commentary": false,
-            "silent_stale_or_estimated_data": false,
-            "unsupported_number": true
-          }
+          "final_score": 15.9
         }
-      },
-      "deltas": {
-        "v2_vs_v1": -2.8,
-        "v2_vs_gen": 71.6,
-        "v1_vs_gen": 74.4
       }
     },
     {
@@ -388,9 +328,68 @@
           }
         },
         "v1": {
-          "final_score": 84.7,
-          "llm_score": 0.847,
-          "mean_agreement": 0.9,
+          "final_score": 84.7
+        },
+        "general": {
+          "final_score": 11.4
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": 13.6,
+        "v2_vs_gen": 86.9,
+        "v1_vs_gen": 73.3
+      }
+    },
+    {
+      "eval_date": "2026-07-15",
+      "framework": "autorubric",
+      "report_path": "outputs/eval_autorubric_2026-07-15.md",
+      "judges": [
+        "openrouter/anthropic/claude-haiku-4-5",
+        "openrouter/google/gemini-2.5-flash"
+      ],
+      "ensemble": true,
+      "briefs": {
+        "v2": "brief_v2_2026-07-15_0715.md",
+        "v1": "brief_v1_2026-07-14_1124.md",
+        "general": "brief_general_2026-07-14.md"
+      },
+      "scores": {
+        "v2": {
+          "final_score": 96.0,
+          "llm_score": 0.96,
+          "mean_agreement": 0.95,
+          "binary": {
+            "sections_complete": true,
+            "sector_matrix_complete": true,
+            "required_calculations_present": true,
+            "sources_with_vintage_dates": true,
+            "peg_chain_traced": true,
+            "watch_list_specific": true,
+            "action_flag_with_rationale": true,
+            "calculation_block_aed": true,
+            "header_metadata_complete": true,
+            "prior_state_referenced": true
+          },
+          "dims": {
+            "mandate_relevance": 5,
+            "data_grounding": 4,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 5,
+            "action_specificity": 5,
+            "data_integrity": 4,
+            "trend_continuity": 5
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": false
+          }
+        },
+        "v1": {
+          "final_score": 88.1,
+          "llm_score": 0.881,
+          "mean_agreement": 0.925,
           "binary": {
             "sections_complete": true,
             "sector_matrix_complete": true,
@@ -405,9 +404,9 @@
           },
           "dims": {
             "mandate_relevance": 5,
-            "data_grounding": 5,
-            "quantitative_accuracy": 4,
-            "structure_completeness": 3,
+            "data_grounding": 4,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 5,
             "action_specificity": 5,
             "data_integrity": 5,
             "trend_continuity": 1
@@ -419,9 +418,9 @@
           }
         },
         "general": {
-          "final_score": 11.4,
-          "llm_score": 0.114,
-          "mean_agreement": 0.775,
+          "final_score": 15.9,
+          "llm_score": 0.159,
+          "mean_agreement": 0.8,
           "binary": {
             "sections_complete": false,
             "sector_matrix_complete": false,
@@ -436,11 +435,11 @@
           },
           "dims": {
             "mandate_relevance": 2,
-            "data_grounding": 4,
+            "data_grounding": 3,
             "quantitative_accuracy": 1,
-            "structure_completeness": 1,
-            "action_specificity": 1,
-            "data_integrity": 2,
+            "structure_completeness": 3,
+            "action_specificity": 2,
+            "data_integrity": 3,
             "trend_continuity": 1
           },
           "penalties": {
@@ -451,9 +450,9 @@
         }
       },
       "deltas": {
-        "v2_vs_v1": 13.6,
-        "v2_vs_gen": 86.9,
-        "v1_vs_gen": 73.3
+        "v2_vs_v1": 8.0,
+        "v2_vs_gen": 80.1,
+        "v1_vs_gen": 72.2
       }
     }
   ],
