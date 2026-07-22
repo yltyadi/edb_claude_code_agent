@@ -147,3 +147,8 @@ Do not delete entries — they accumulate as a learning history.*
 - **Rule 1 — compute each derived quantity ONCE, in a calculation block, then reuse that exact number everywhere** (headline, Key number, sector matrix, Type B). Never let the headline, Key number, and matrix quote different AED figures for what a reader will take to be the same thing.
 - **Rule 2 — when you report more than one oil-fiscal figure, label precisely what each represents** on the same line: "uplift vs pre-crisis baseline", "total surplus above the ~$55/bbl breakeven", "single-session change". Different framings → different numbers → each needs its own labelled calc line.
 - **Rule 3 — the Key number and the headline must be internally consistent.** If the headline cites an uplift and the Key number cites a surplus, state both bases explicitly so the reader can reconcile them; do not present one as if it contradicts the other.
+
+
+### 2026-07-22 — Data Grounding & Source Citation (AutoRubric CI: 2/5) <!-- auto:dim:data_grounding -->
+- **Observed:** The submission exhibits significant sourcing and disclosure failures that warrant a 'Weak' rating. While it names some sources (Yahoo Finance, Al Jazeera, oilprice.com, FRED), it relies heavily on estimates without prominent disclosure: EIBOR is marked (est.) but buried in methodology rather than stated prominently at first use; the CBUAE scraper is null on July 22 yet the base rate is carried fro
+- **Fix:** Strengthen this dimension per its behavioural anchors; a ≤2/5 is a concrete deficiency, not a scoring artifact.
