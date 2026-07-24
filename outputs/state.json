@@ -1,23 +1,25 @@
 {
   "schema_version": 1,
   "agent_version": "v2",
-  "last_updated": "2026-07-23",
+  "last_updated": "2026-07-24",
   "last_run": {
-    "date": "2026-07-23",
-    "timestamp": "2026-07-23T07:32:00.000000",
-    "brief_path": "outputs/brief_v2_2026-07-23_0732.md",
+    "date": "2026-07-24",
+    "timestamp": "2026-07-24T07:30:00.000000",
+    "brief_path": "outputs/brief_v2_2026-07-24_0730.md",
     "agent_version": "v2"
   },
   "baselines": {
     "eibor_3m_pct": 3.9,
-    "brent_usd": 97.28,
-    "wti_usd": 89.48,
+    "brent_usd": 98.97,
+    "brent_intraday_high_usd": 101.16,
+    "brent_prior_close_usd": 100.69,
+    "wti_usd": 91.0,
     "fed_funds_upper_pct": 3.75,
     "fed_funds_lower_pct": 3.5,
     "cbuae_base_rate_pct": 3.65,
     "us_cpi_yoy_pct": 3.54,
     "us_cpi_index_june_2026": 332.568,
-    "us_10yr_treasury_pct": 4.63,
+    "us_10yr_treasury_pct": 4.67,
     "breakeven_inflation_pct": 2.28,
     "uae_gdp_usd_bn": 552.3,
     "uae_industry_pct_gdp": 44.3,
@@ -27,51 +29,48 @@
     "uae_production_mbpd": 3.8,
     "uae_gdp_growth_forecast_pct": 5.0,
     "notes": {
-      "eibor": "3.900% (est.) as of July 23 2026 0732 UTC; CBUAE base rate 3.65% confirmed July 14; scraper null July 23; last live EIBOR confirmation July 10 2026; EIBOR-base spread 25bps; 16 consecutive unchanged days (streak: day 16).",
-      "brent": "July 23 2026 ~07:32 UTC: $97.28 consensus (oilprice.com $97.59 +3.74%; Yahoo Finance BZ=F $96.96 +3.07%). FRED $86.99 July 20 stale \u2014 overridden. Session delta from $93.43: +$3.85/bbl (+4.1%). Cumulative war premium from $69.56 pre-escalation: +$27.72/bbl. Houthi Saudi tanker strikes (Day 17). US strikes Iran night 12. Goldman $120 scenario moving toward base case.",
-      "wti": "July 23 2026: oilprice.com $89.48 (+3.05%). FRED $84.38 July 20 stale \u2014 overridden.",
-      "hormuz": "Day 17 of active kinetic conflict (July 7 - July 23). LNG shipments through Hormuz halted. Kuwaiti tanker struck Day 16 (inside Strait). US struck Iranian nuclear facility Khuzestan night 12. Two Saudi oil tankers struck by Houthis in Red Sea (NEW July 23 00:31 UTC). CMA CGM emergency surcharge in force including solar equipment. Goldman Sachs $120/bbl if Hormuz remains closed \u2014 now closer to base case. No ceasefire reported.",
-      "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production 3.8 mb/d (Reuters July 6 2026). Targeting 5 mb/d by 2031. OPEC basket ~$75 (scraper null July 23, prior state.json fallback).",
-      "cpi_june_2026": "FRED CPIAUCSL June 2026 index = 332.568 (dated 2026-06-01). MoM -0.422%. FOMC July 28-29 meeting in 5 days. Beige Book published July 23.",
-      "fed": "June 17 FOMC \u2014 5th consecutive hold; Fed Funds 3.50\u20133.75%. July 28-29 FOMC 5 days away. FEDFUNDS 3.63% (June, 52 days stale \u2014 assumed unchanged). Beige Book July 23.",
-      "cbuae": "3.65% confirmed July 14 2026. 225 consecutive unchanged days (day 225). Scraper null July 23.",
-      "us_10yr": "4.63% (FRED July 21, valid, +3bps from 4.60%). T10YIE 2.28% (FRED July 22, valid, +2bps from 2.26%).",
-      "opec_plus": "OPEC basket ~$75 (scraper null July 23, prior state.json fallback). UAE exited OPEC+ May 2026. UAE production 3.8 mb/d.",
-      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 22.5bn/yr pace required (Jul 2026\u2192Jan 2031, 4.45 yrs); current pace AED 13.4bn/yr; deficit AED 9.1bn/yr; at current pace ~2033 (approx 3 years late). No new data this session.",
-      "oil_fiscal_figures": "Figure A (session delta Jul23 $97.28 vs Jul22 $93.43): AED +19.6bn/yr. Figure B (cumulative war premium vs pre-escalation $69.56): AED +141.2bn/yr. Figure C (surplus vs $55/bbl UAE breakeven): AED +215.4bn/yr. All computed at $97.28 Brent, 3.8 mb/d, peg 3.6725.",
-      "petrochemical": "AED +4.18bn/yr cumulative feedstock additional cost at $97.28 Brent vs pre-escalation $69.56 (39.9% price rise \u00d7 60% pass-through \u00d7 AED 17.5bn base). Session increment from $93.43 (+4.1%): AED +433mn/yr.",
-      "fred_status": "FEDFUNDS 3.63% (June, 52 days stale \u2014 assumed unchanged); INDPRO 102.64 (June, 52 days stale \u2014 background only); DCOILBRENTEU $86.99 (July 20, 3 days stale \u2014 overridden by web $97.28 July 23); DCOILWTICO $84.38 (July 20, 3 days stale \u2014 web override $89.48 July 23); DGS10 4.63% (July 21, valid, +3bps from 4.60%); T10YIE 2.28% (July 22, valid, +2bps from 2.26%); CPIAUCSL June 2026 index 332.568 (dated 2026-06-01, valid)",
+      "eibor": "3.900% (est.) as of July 24 2026 0730 UTC; CBUAE base rate 3.65% confirmed July 14 2026; scraper null July 24; last live EIBOR confirmation July 10 2026; EIBOR-base spread 25bps; 17 consecutive unchanged days (streak: day 17).",
+      "brent": "July 24 2026 ~07:30 UTC: $98.97 (Yahoo Finance BZ=F; open $100.91, intraday high $101.16 \u2014 FIRST $100+ PRINT in 18-day Hormuz crisis; previous close $100.69 per investing.com). FRED $86.99 July 20 stale \u2014 overridden. Session delta from $97.28 state.json baseline: +$1.69/bbl. Cumulative war premium from $69.56 pre-escalation: +$29.41/bbl. No ceasefire. Day 18 of conflict.",
+      "wti": "July 24 2026: ~$91 (estimated; FRED $84.38 July 20 stale \u2014 overridden; web estimate based on Brent-WTI spread).",
+      "hormuz": "Day 18 of active kinetic conflict (July 7 - July 24). Brent crossed $100 intraday July 23/24. LNG shipments through Hormuz halted. Bab el-Mandeb Houthi blockade on Saudi Arabia. CMA CGM emergency surcharge in force. Goldman Sachs $120/bbl if Hormuz remains closed \u2014 approaching base case. No ceasefire reported. TotalEnergies Q2 profit +68%; Equinor +93%. US refinery utilisation 96.2%.",
+      "uae_opec_exit": "UAE formally exited OPEC+ effective May 1 2026. UAE production 3.8 mb/d (Reuters July 6 2026). Targeting 5 mb/d by 2031. OPEC basket ~$75 (scraper null July 24, prior state.json fallback).",
+      "cpi_june_2026": "FRED CPIAUCSL June 2026 index = 332.568 (dated 2026-06-01). MoM -0.422%. FOMC July 28-29 meeting in 4 days.",
+      "fed": "June 17 FOMC \u2014 5th consecutive hold; Fed Funds 3.50\u20133.75%. July 28-29 FOMC in 4 days. FEDFUNDS 3.63% (June, 53 days stale \u2014 assumed unchanged). Stagflation complexity: CPI deflation vs Brent $100+ energy inflation.",
+      "cbuae": "3.65% confirmed July 14 2026. 226 consecutive unchanged days (day 226). Scraper null July 24.",
+      "us_10yr": "4.67% (FRED July 22, valid, +4bps from 4.63%). T10YIE 2.28% (FRED July 23, valid, unchanged).",
+      "opec_plus": "OPEC basket ~$75 (scraper null July 24, prior state.json fallback). UAE exited OPEC+ May 2026. UAE production 3.8 mb/d.",
+      "operation_300bn": "AED 200bn milestone confirmed May 4 2026; 40.1% of gap closed [(200-133)/(300-133)]; AED 100bn remaining; AED 22.5bn/yr pace required (Jul 2026\u2192Jan 2031, 4.45 yrs); current pace AED 13.4bn/yr; deficit AED 9.1bn/yr; at current pace ~2033 (approx 2 years late). No new data this session.",
+      "oil_fiscal_figures": "Figure A (session delta Jul24 $98.97 vs Jul23 state.json $97.28): AED +8.61bn/yr. Figure B (cumulative war premium vs pre-escalation $69.56): AED +149.81bn/yr. Figure C (surplus vs $55/bbl UAE breakeven): AED +223.97bn/yr. All computed at $98.97 Brent, 3.8 mb/d, peg 3.6725.",
+      "petrochemical": "AED +4.44bn/yr cumulative feedstock additional cost at $98.97 Brent vs pre-escalation $69.56 (42.3% price rise \u00d7 60% pass-through \u00d7 AED 17.5bn base). Session increment from $97.28 (+1.7%): AED +182mn/yr.",
+      "fred_status": "FEDFUNDS 3.63% (June, 53 days stale \u2014 assumed unchanged); INDPRO 102.64 (June, 53 days stale \u2014 background only); DCOILBRENTEU $86.99 (July 20, 4 days stale \u2014 overridden by web $98.97 July 24); DCOILWTICO $84.38 (July 20, 4 days stale \u2014 web estimate ~$91 July 24); DGS10 4.67% (July 22, valid, +4bps from 4.63%); T10YIE 2.28% (July 23, valid, unchanged); CPIAUCSL June 2026 index 332.568 (dated 2026-06-01, valid)",
       "world_bank": "World Bank AE API: GDP $552.3bn (2024), industry 44.3% (2024), CPI 1.25% (2025). Structural context only.",
-      "houthi_saudi_tanker": "NEW July 23 2026: Two Saudi oil tankers struck by Houthi forces in Red Sea (00:31 UTC). Extends Houthi naval blockade action directly targeting major oil producers.",
-      "beige_book": "Federal Reserve Beige Book published July 23 2026. Key pre-FOMC data point. Competing forces: June CPI deflation vs $97 Brent energy inflation.",
-      "fomc_july2829": "FOMC July 28-29 (5 days). June CPI MoM -0.42% vs Brent $97.28 energy inflation \u2014 stagflation Risk. Beige Book published today July 23."
+      "brent_100_milestone": "NEW July 24 2026: Brent crude crossed $100/bbl intraday (high $101.16). Previous July 23 close $100.69. First $100+ print in the 18-day Hormuz conflict. Day 18 of crisis.",
+      "fomc_july2829": "FOMC July 28-29 (4 days). June CPI MoM -0.42% vs Brent $100+ energy inflation \u2014 stagflation risk. No ceasefire = no Fed relief from energy inflation channel."
     }
   },
   "streaks": {
     "brent_direction": "up",
-    "brent_direction_sessions": 2,
+    "brent_direction_sessions": 3,
     "fed_hold_consecutive_meetings": 5,
-    "eibor_unchanged_days": 16,
-    "cbuae_rate_unchanged_days": 225
+    "eibor_unchanged_days": 17,
+    "cbuae_rate_unchanged_days": 226
   },
   "signals_fired_last_run": [
-    "houthi_saudi_tanker_strikes_NEW_july23",
-    "beige_book_published_NEW_july23",
-    "brent_97.28_up_3.85_from_jul22_session_day2",
-    "hormuz_conflict_day17_CONTINUING",
-    "us_iran_night_strikes_day12_CONTINUING",
-    "hormuz_lng_halt_CONTINUING_day4",
-    "houthi_red_sea_blockade_CONTINUING_day4",
-    "goldman_120_warning_CONTINUING_july23",
-    "figure_A_session_delta_aed_plus19.6bn_yr_jul23_vs_jul22",
-    "figure_B_war_premium_aed_plus141.2bn_yr_vs_69.56",
-    "figure_C_surplus_aed_215.4bn_yr_vs_55_breakeven",
-    "petrochemical_feedstock_aed_4.18bn_cumulative_vs_preescalation_433mn_session",
-    "fomc_5consecutive_holds_july2829_5days",
-    "eibor_3.900pct_estimated_unchanged_day16",
-    "cbuae_3.65pct_unchanged_day225",
+    "brent_100_crossing_NEW_july24_intraday_high_101.16",
+    "hormuz_conflict_day18_CONTINUING",
+    "bab_el_mandeb_houthi_blockade_saudi_tankers_CONTINUING_day2",
+    "goldman_120_base_case_approaching_CONTINUING_july24",
+    "figure_A_session_delta_aed_plus8.61bn_yr_jul24_vs_jul23",
+    "figure_B_war_premium_aed_plus149.81bn_yr_vs_69.56",
+    "figure_C_surplus_aed_223.97bn_yr_vs_55_breakeven",
+    "petrochemical_feedstock_aed_4.44bn_cumulative_42pct_rise_182mn_session",
+    "fomc_5consecutive_holds_july2829_4days_stagflation_complexity",
+    "eibor_3.900pct_estimated_unchanged_day17",
+    "cbuae_3.65pct_unchanged_day226",
     "peg_chain_fed_3.50_to_3.75_cbuae_3.65_eibor_3.90est_edb_5.90_sme_ads_877091",
-    "operation_300bn_aed200bn_40.1pct_gap_pace_deficit_9.1bn_yr"
+    "operation_300bn_aed200bn_40.1pct_gap_pace_deficit_9.1bn_yr",
+    "us_10yr_4.67pct_jul22_plus4bps",
+    "totalenergies_q2_profit_plus68pct_equinor_plus93pct_CONTINUING"
   ],
   "eval_history": [
     {
@@ -845,6 +844,121 @@
         "v2_vs_v1": 8.0,
         "v2_vs_gen": 80.1,
         "v1_vs_gen": 72.2
+      }
+    },
+    {
+      "eval_date": "2026-07-24",
+      "framework": "autorubric",
+      "report_path": "outputs/eval_autorubric_2026-07-24.md",
+      "judges": [
+        "openrouter/anthropic/claude-haiku-4-5",
+        "openrouter/google/gemini-2.5-flash"
+      ],
+      "ensemble": true,
+      "briefs": {
+        "v2": "brief_v2_2026-07-24_0730.md",
+        "v1": "brief_v1_2026-07-14_1124.md",
+        "general": "brief_general_2026-07-14.md"
+      },
+      "scores": {
+        "v2": {
+          "final_score": 94.3,
+          "llm_score": 0.943,
+          "mean_agreement": 0.925,
+          "binary": {
+            "sections_complete": true,
+            "sector_matrix_complete": true,
+            "required_calculations_present": true,
+            "sources_with_vintage_dates": true,
+            "peg_chain_traced": true,
+            "watch_list_specific": true,
+            "action_flag_with_rationale": true,
+            "calculation_block_aed": true,
+            "header_metadata_complete": true,
+            "prior_state_referenced": true
+          },
+          "dims": {
+            "mandate_relevance": 5,
+            "data_grounding": 4,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 5,
+            "action_specificity": 4,
+            "data_integrity": 4,
+            "trend_continuity": 5
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": false
+          }
+        },
+        "v1": {
+          "final_score": 88.6,
+          "llm_score": 0.886,
+          "mean_agreement": 0.95,
+          "binary": {
+            "sections_complete": true,
+            "sector_matrix_complete": true,
+            "required_calculations_present": true,
+            "sources_with_vintage_dates": true,
+            "peg_chain_traced": true,
+            "watch_list_specific": true,
+            "action_flag_with_rationale": true,
+            "calculation_block_aed": true,
+            "header_metadata_complete": true,
+            "prior_state_referenced": false
+          },
+          "dims": {
+            "mandate_relevance": 5,
+            "data_grounding": 5,
+            "quantitative_accuracy": 5,
+            "structure_completeness": 5,
+            "action_specificity": 5,
+            "data_integrity": 4,
+            "trend_continuity": 1
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": false
+          }
+        },
+        "general": {
+          "final_score": 21.6,
+          "llm_score": 0.216,
+          "mean_agreement": 0.7,
+          "binary": {
+            "sections_complete": false,
+            "sector_matrix_complete": false,
+            "required_calculations_present": false,
+            "sources_with_vintage_dates": false,
+            "peg_chain_traced": true,
+            "watch_list_specific": true,
+            "action_flag_with_rationale": false,
+            "calculation_block_aed": false,
+            "header_metadata_complete": false,
+            "prior_state_referenced": false
+          },
+          "dims": {
+            "mandate_relevance": 2,
+            "data_grounding": 4,
+            "quantitative_accuracy": 1,
+            "structure_completeness": 4,
+            "action_specificity": 1,
+            "data_integrity": 3,
+            "trend_continuity": 3
+          },
+          "penalties": {
+            "generic_market_commentary": false,
+            "silent_stale_or_estimated_data": false,
+            "unsupported_number": true
+          }
+        }
+      },
+      "deltas": {
+        "v2_vs_v1": 5.7,
+        "v2_vs_gen": 72.7,
+        "v1_vs_gen": 67.0
       }
     }
   ],
